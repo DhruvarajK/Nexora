@@ -69,6 +69,7 @@
             flex-wrap: nowrap;
             text-overflow: ellipsis;
             width: 100px;
+            text-align: left;
         }
   
             #history.collapsed { width: 56px;
