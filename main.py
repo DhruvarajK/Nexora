@@ -807,64 +807,77 @@ class RunCodeResponse(BaseModel):
     status: str
     output: str
     error: str
-
+    
 @app.post("/run_code", response_model=RunCodeResponse)
 async def run_code(req: RunCodeRequest):
     code = req.code
     language = req.language
-    language=get_language_from_filename(language)
-    temp_file_path = None 
+    language = get_language_from_filename(language)
+    temp_file_path = None
     print(language)
 
+    # Prefer python3 on systems where it's available (like Ubuntu). Fallback to python.
+    python_cmd = shutil.which("python3") or shutil.which("python") or "python3"
+
+    # Optionally detect node binary (node vs nodejs)
+    node_cmd = shutil.which("node") or shutil.which("nodejs") or "node"
+
     ALLOWED_COMMANDS = {
-        "python": ["python"],
-        "javascript": ["node"],
+        "python": [python_cmd],
+        "javascript": [node_cmd],
         "java": ["javac", "java"]
     }
 
     if language not in ALLOWED_COMMANDS:
         raise HTTPException(status_code=400, detail=f"Unsupported or unsafe language for execution: {language}")
 
-    process = None # Initialize process to None for finally block cleanup
+    process = None  # Initialize for finally block cleanup
     try:
-        with tempfile.NamedTemporaryFile(delete=False, mode='w+', encoding='utf-8', suffix=f".{language}") as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, mode="w+", encoding="utf-8", suffix=f".{language}") as temp_file:
             temp_file.write(code)
+            temp_file.flush()
             temp_file_path = temp_file.name
 
         command = []
-        
+
         if language == "python":
             command = ALLOWED_COMMANDS["python"] + [temp_file_path]
         elif language == "javascript":
             command = ALLOWED_COMMANDS["javascript"] + [temp_file_path]
         elif language == "java":
+            # Use Main as class name (leave as-is or derive from code/file if you want)
             class_name = "Main"
-            java_compile_command = ALLOWED_COMMANDS["java"][0] + [temp_file_path]
-            
+            # Build compile command as a list (avoid string + list)
+            java_compile_command = [ALLOWED_COMMANDS["java"][0], temp_file_path]
+
             # Compile Java code
             compile_process = subprocess.run(
                 java_compile_command,
-                capture_output=True, # This is fine for subprocess.run
+                capture_output=True,
                 text=True,
                 timeout=10,
-                cwd=os.path.dirname(temp_file_path)
+                cwd=os.path.dirname(temp_file_path) or None
             )
 
             if compile_process.returncode != 0:
-                return RunCodeResponse(status="error", output=compile_process.stdout, error=f"Compilation failed: {compile_process.stderr}")
-            
-            command = ALLOWED_COMMANDS["java"][1] + ["-cp", os.path.dirname(temp_file_path), class_name]
-        
-        # Execute the command using Popen for better timeout handling and termination control
+                return RunCodeResponse(
+                    status="error",
+                    output=compile_process.stdout,
+                    error=f"Compilation failed: {compile_process.stderr}"
+                )
+
+            # Run java with -cp pointing to the temp dir
+            command = [ALLOWED_COMMANDS["java"][1], "-cp", os.path.dirname(temp_file_path) or ".", class_name]
+
+        # Execute the command using Popen for timeout handling and termination control
         process = subprocess.Popen(
             command,
-            stdout=subprocess.PIPE, # Capture stdout
-            stderr=subprocess.PIPE, # Capture stderr
-            text=True # Decode stdout/stderr as text (UTF-8 by default)
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
 
         try:
-            # Use communicate with timeout on the Popen object
             output, error = process.communicate(timeout=10)
 
             if process.returncode != 0:
@@ -878,40 +891,46 @@ async def run_code(req: RunCodeRequest):
                 return RunCodeResponse(status="success", output=output, error=error)
 
         except subprocess.TimeoutExpired:
-            # Attempt to terminate the process
+            # Terminate/kill depending on platform
             if platform.system() == "Windows":
-                # Use taskkill to terminate the process by its PID
                 try:
                     subprocess.run(["taskkill", "/F", "/PID", str(process.pid)], capture_output=True, text=True, check=True)
                 except subprocess.CalledProcessError as e:
-                    # Log or handle if taskkill itself fails (e.g., process already gone)
                     print(f"Warning: taskkill failed: {e.stderr}")
             else:
-                # For Unix-like systems, send SIGTERM, then SIGKILL if needed
-                process.terminate() # Send SIGTERM
+                process.terminate()
                 try:
-                    process.wait(timeout=1) # Wait for it to terminate
+                    process.wait(timeout=1)
                 except subprocess.TimeoutExpired:
-                    process.kill() # If still running, send SIGKILL
+                    process.kill()
 
-            # Read any output that might have been produced before termination
-            # communicate() here will also close the pipes.
-            output, error = process.communicate() 
+            # Read leftover output (communicate will close pipes)
+            try:
+                output, error = process.communicate(timeout=1)
+            except Exception:
+                output, error = "", ""
             return RunCodeResponse(status="error", output=output, error="Code execution timed out after 10 seconds. The process was terminated.")
-        
+
     except Exception as e:
-        # Catch other potential errors during file operations or command preparation
         return RunCodeResponse(status="error", output="", error=f"Failed to run code: {str(e)}")
     finally:
-        # Clean up the temporary file and compiled Java class files if they exist
         if temp_file_path and os.path.exists(temp_file_path):
-            os.unlink(temp_file_path)
-        
-        # Ensure the process is cleaned up, even if an exception occurred earlier
-        if process and process.poll() is None: # If process is still running
-            process.kill() # Forcefully terminate
-            process.wait() # Wait for cleanup
+            try:
+                os.unlink(temp_file_path)
+            except OSError as e:
+                print(f"Warning: could not delete temp file {temp_file_path}: {e}")
 
+        if process and process.poll() is None:
+            try:
+                process.kill()
+            except Exception:
+                pass
+            try:
+                process.wait(timeout=1)
+            except Exception:
+                pass
+
+        # Clean up compiled Java class if present
         if language == "java" and temp_file_path:
             class_file_path = os.path.join(os.path.dirname(temp_file_path), "Main.class")
             if os.path.exists(class_file_path):
@@ -919,8 +938,6 @@ async def run_code(req: RunCodeRequest):
                     os.unlink(class_file_path)
                 except OSError as e:
                     print(f"Warning: Could not delete Java class file {class_file_path}: {e}")
-                    
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
