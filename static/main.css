@@ -467,7 +467,7 @@
     color: #334155;
     line-height: 1.6;
     font-size: 14px;
-    background-color: #fff;
+    background-color: transparent;
     position: relative;
     padding-left: 2rem;
 }
@@ -513,9 +513,12 @@
   background-color: #666;
   border-radius: 50%;
   z-index: 1;
-  transition: all 0.2s 
-ease;
-  border: 8px solid white;
+  transition: all 0.2s ease;
+  border: 8px solid #f5f7fa;
+}
+
+.thinking-block .complete{
+  padding-bottom: 10px;
 }
 
 /* Hover effects */

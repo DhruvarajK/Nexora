@@ -278,19 +278,15 @@
 
         .thinking-block {
           margin: 12px 0;
-          border-radius: 22px;
+          border-radius: 0;
           padding: 0px;
+          margin-bottom: 15px;
         }
         
         .thinking-header {
-          padding: 10px 12px;
+          padding: 6px 0px;
         }
         
-        .thinking-content {
-          padding: 12px;
-          font-size: 14px;
-          background-color: transparent;
-        }
         
         .thinking-icon {
           font-size: 14px;
