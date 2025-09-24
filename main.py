@@ -477,8 +477,7 @@ async def chat_stream_exec(req: ChatRequest):
         f"Your role is to act as a message passer, providing clear, concise, and formally worded responses. "
         f"Deliver the following output to the user: '{ops_gen}' "
         f"for the given user prompt: '{user_msg}'. "
-        f"Whenever a link is included, present it as a clickable Markdown link in the format: "
-        f"[Descriptive Text](URL) "
+        f"If a link is present, format it strictly as: [Descriptive Text](URL)"
         f"Responses must be free of any code, programming syntax, or code-like formatting, including inline backticks. "
         f"Responses may use multiple lines and paragraphs when appropriate for clarity."
     )
@@ -500,11 +499,11 @@ async def chat_stream_exec(req: ChatRequest):
             model="qwen/qwen2.5-vl-32b-instruct:free",
             stream=True,
             messages=messages,
-            max_tokens=150,          # limits output length
-            temperature=0.3,         # makes output more focused & less random
-            top_p=0.8,               # slightly narrows choice distribution
-            presence_penalty=0.0,    # avoids unnecessary expansion
-            frequency_penalty=0.5    # discourages repetition
+            max_tokens=450,          
+            temperature=0.3,        
+            top_p=0.8,            
+            presence_penalty=0.0,    
+            frequency_penalty=0.5    
         )
 
 

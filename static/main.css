@@ -86,7 +86,7 @@
           }
           .history-section {
             margin: 7px;
-            max-height: 400px;
+            max-height: 500px;
             overflow: hidden;
             padding: 10px 13px 7px 11px;
             border-radius: 12px;
@@ -875,8 +875,12 @@ svg.nav-icon {
 
 /* When the #history is NOT collapsed, apply the expanded styles */
 #history:not(.collapsed) #chat-list {
-  max-height: 365px; /* Or a sufficiently large value that covers its full expanded height */
+  max-height: 500px; /* Or a sufficiently large value that covers its full expanded height */
   opacity: 1;
+}
+
+span.chat-list-timestamp {
+  opacity: 0.5;
 }
 #code-files-list {
   flex-grow: 1;
@@ -1086,7 +1090,6 @@ transform: translateY(0);
   position: absolute;
   bottom: 7.2rem;
   z-index: 10;
-  right: 0;
   background-color: #ffffff;
   color: #2d2d2d;
   border-radius: 50%;
@@ -1704,9 +1707,7 @@ span.exec-code-label svg {
 }
 
 /* Dark theme variant */
-.dark-theme .streaming-cursor {
-    background: linear-gradient(45deg, #fff, #ccc);
-}
+
 
 .chat-delta{
   width: 100%;
@@ -1720,7 +1721,14 @@ body:has(#inco-btn.expanded) .input-box {
 
 }
 
+body:has(#inco-btn.expanded) .expand-button {
+  background-color: transparent;
+}
+body:has(#inco-btn.expanded) .expand-button.expanded {
+  background-color: #161616;
+  color: rgb(255, 255, 255);
 
+}
 
 
 

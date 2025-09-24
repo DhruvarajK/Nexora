@@ -8,6 +8,10 @@
     }
 
 
+    .nex-head span {
+      display: none;
+  }
+
     
 .scroll-box {
     width: 300px;
@@ -113,10 +117,9 @@
     }
 
     .history-section {
-        margin: 8px;
-        padding: 12px;
-    }
-
+      margin: 8px;
+      padding: 0px;
+  }
     .history-item {
         padding: 12px 16px;
         font-size: 0.9rem;
@@ -149,7 +152,6 @@
         padding-top: 50px;
     }
     .mob-header {
-        /* background-color: #f5f7fa; */
         width: 100%;
         height: 60px;
         position: fixed;
@@ -158,7 +160,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgb(245 247 250 / 82%);
+        background: #ffffffd1;
         will-change: backdrop-filter;
         backdrop-filter: blur(2px) saturate(0%);
         -webkit-backdrop-filter: blur(8px) saturate(120%);
@@ -451,6 +453,9 @@
         padding: 12px;
         margin: 8px;
     }
+    #code-files-list{
+      margin-left: 0;
+    }
 
 
 
@@ -459,6 +464,15 @@
         width: 23px;
         height: 23px;
     }
+
+    svg#hist-ico, svg#file-ico {
+      display: none;
+  }
+    h3#hist-ico, h3#file-ico {
+      font-weight: 300;
+      font-size: 12px;
+      padding-left: 17px;
+  }
 
     .side-panel-ic {
         gap: 6px;
@@ -488,6 +502,53 @@
         padding: 2px;
     }
 
+
+    #inco-btn .expand-button {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 9px; 
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 30px;
+      background-color: #e7e7e796;
+      color: #000000de;
+      cursor: pointer;
+      transition: width 0.3s ease, background-color 0.3s ease;
+      white-space: nowrap;
+      gap: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      box-sizing: border-box; 
+  }
+  
+  #inco-btn .expand-button svg {
+      flex-shrink: 0;
+      width: 20px; 
+      height: 20px; 
+  }
+  
+  #inco-btn .expand-button .label {
+      opacity: 0;
+      transition: opacity 0.2s ease 0.1s;
+  }
+  
+  #inco-btn.expand-button.expanded {
+    background-color: #bdc3ff73 !important;
+    color: #1124ed73 !important;
+    padding-right: 0;
+    max-width: 34px;
+}
+
+#chat-list{
+  margin-left: 0;
+}
+  
+  #inco-btn .expand-button.expanded .label {
+      display: none;
+  }
+
     /* Next head */
     .nex-head {
         top: 50%;
@@ -501,10 +562,10 @@
     }
 
     .nex-head svg {
-        width: 40px;
-        height: 40px;
-        color: inherit;
-    }
+      width: 90px;
+      height: 90px;
+      color: inherit;
+  }
 
     /* Chat menu */
     .chat-menu {
