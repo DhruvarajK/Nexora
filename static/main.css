@@ -1743,6 +1743,11 @@ body:has(#inco-btn.expanded) .inner-inco-info {
 
 }
 
+
+body:has(#inco-btn.expanded) .bubble-user {
+  background-color: #939cff12;
+  border: 1px solid #939cff;
+}
 .inner-inco-info {
   font-size: 11px;
   max-height: 0;
