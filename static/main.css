@@ -1227,7 +1227,7 @@ img.logo {
 
 
 /* Desktop specific styles (slide from left) */
-@media (min-width: 768px) {
+@media (min-width: 1168px) {
   .sliding-panel {
       width: 0;
   }
@@ -1958,7 +1958,7 @@ display: none;
 }
 
 /* Responsive tweaks */
-@media (max-width: 640px){
+@media (max-width: 1140px){
   :root { --thumb-height: 140px; --thumb-width-min: 140px; }
   .images-modal__panel { padding: 16px; border-radius: 0;}
   .images-modal__title { font-size: 18px; padding-left: 27px; }

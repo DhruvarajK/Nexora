@@ -651,7 +651,7 @@ span.streaming-indicator {
 .file-card-icon svg { width: 36px; height: auto; display: block; }
 
 /* responsiveness */
-@media (max-width: 520px) {
+@media (max-width: 1120px) {
   .file-card { min-width: 160px; max-width: 100%; gap: 8px; padding: 7px; }
   .file-card .file-card-name { font-size: 13px; }
   .file-card .file-card-meta { font-size: 11px; }
@@ -830,7 +830,7 @@ span.streaming-indicator {
 }
 
 /* responsive tweaks */
-@media (max-width: 720px) {
+@media (max-width: 1120px) {
   .clb-nav { display: none; }
   .clb-mediawrap { max-width: 92vw; max-height: 66vh; }
   .clb-caption { max-width: 58%; }

@@ -36,4 +36,4 @@ python-dotenv
 python-multipart
 ddgs
 qrcode[pil]
-replicate
+huggingface-hub
