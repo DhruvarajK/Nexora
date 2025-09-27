@@ -15,7 +15,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
 from pydantic import BaseModel
-import replicate
 from scraper import get_content_from_links,SYSTEM_PROMPT,LLM_MODEL, get_search_links, truncate_prompt_text
 import shutil
 import time
