@@ -15,6 +15,13 @@
       box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
       color: #0f172a;
     }
+
+    .images-modal__panel,.image-card{
+      background: #ffffff;
+    }
+    .images-modal__title,#close-modal-btn svg{
+      color: rgb(0, 0, 0);
+    }
   
     /* containers / panels */
     #history, #chat-box, .sliding-panel, .panel-content, .panel-header, .exec-code-content {
@@ -719,6 +726,13 @@
     }
     .streaming-cursor {
         background: linear-gradient(45deg, #fff, #ccc);
+    }
+
+    .images-modal__panel,.image-card{
+      background: #0e0d0e;
+    }
+    .images-modal__title,#close-modal-btn svg{
+      color: white;
     }
   }
   

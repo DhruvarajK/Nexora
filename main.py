@@ -431,33 +431,46 @@ def parse_message_with_images(message: str):
 
 
 
-def generate_and_upload_sync(prompt: str) -> str:
-    user_id = get_current_user_id()
-    input_data = {
-        "prompt": prompt
-    }
-    output = replicate.run(
-        "black-forest-labs/flux-dev",
-        input=input_data
-    )
-    public_url = output[0]
-    paren_bracket_variant = f"{public_url}"
+def generate_and_upload_sync(prompt: str, user_id: int) -> str:
+    print("generate_and_upload_sync: called, user_id type:", type(user_id), "value:", user_id)
+    input_data = {"prompt": prompt}
+
+    try:
+        output = replicate.run("black-forest-labs/flux-dev", input=input_data)
+        public_url = output[0] if output else None
+        if not public_url:
+            print("generate_and_upload_sync: Replicate returned no output.")
+            return ""
+        public_url = str(public_url)   # ensure it's a plain string
+    except Exception as e:
+        print("generate_and_upload_sync: Replicate call failed.", e)
+        return ""
+
     try:
         cur = conn.cursor()
+        # make sure user_id and public_url are simple scalar types
+        if not isinstance(user_id, (int, str)):
+            raise TypeError("user_id must be int or str, got: %r" % type(user_id))
         cur.execute(
-        "INSERT INTO images (user_id, image_url, prompt) VALUES (?, ?, ?)",
-            (user_id, paren_bracket_variant, prompt)
+            "INSERT INTO images (user_id, image_url, prompt) VALUES (?, ?, ?)",
+            (int(user_id), public_url, prompt)
         )
-
         conn.commit()
+        cur.close()
     except Exception as e:
-        print("generate_and_upload_sync: DB insert/commit failed (continuing).",e)
+        # rollback on error
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        print("generate_and_upload_sync: DB insert/commit failed.", e)
+        return ""
 
     return public_url
 
 
 @app.post("/generate-image")
-async def generate_image_stream(req: ChatRequest):
+async def generate_image_stream(req: ChatRequest, user_id: int = Depends(get_current_user_id)):
     prompt = req.message
     chat_id = req.chat_id
     if not prompt:
@@ -475,8 +488,9 @@ async def generate_image_stream(req: ChatRequest):
     async def event_generator():
         yield sse_event("user", prompt)
         try:
-            public_url = await asyncio.to_thread(generate_and_upload_sync, prompt)
+            public_url = await asyncio.to_thread(generate_and_upload_sync, prompt,user_id)
         except Exception as e:
+            print(e)
             yield sse_event("error", f"Image generation/upload failed: {str(e)}")
             return
 
@@ -497,14 +511,8 @@ async def generate_image_stream(req: ChatRequest):
 
 
 @app.get("/images")
-def list_images(limit: int = 50):
-    user_id = get_current_user_id()
-    
-    # Ensure limit is reasonable
+def list_images(limit: int = 50,user_id: int = Depends(get_current_user_id)):
     limit = min(limit, 100)
-    
-    # Use row_factory to get dictionary results
-    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     
     cur.execute(
