@@ -568,20 +568,27 @@ async def generate_image_stream(req: ChatRequest, user_id: int = Depends(get_cur
         yield sse_event("user", prompt)
         try:
             public_url = await asyncio.to_thread(generate_and_upload_sync, prompt,user_id)
+            
+                
         except Exception as e:
             print(e)
             yield sse_event("error", f"Image generation/upload failed: {str(e)}")
             return
 
         try:
-            paren_bracket_variant = f"[{prompt}]({public_url})"
-            yield sse_event("bot", paren_bracket_variant)
-            user_text_with_link = f"{prompt}"
-            bot_text = paren_bracket_variant
-            try:
-                add_history(chat_id, user_text_with_link, bot_text)
-            except Exception:
-                print("error")
+            if public_url != "":
+                paren_bracket_variant = f"[{prompt}]({public_url})"
+                yield sse_event("bot", paren_bracket_variant)
+                user_text_with_link = f"{prompt}"
+                bot_text = paren_bracket_variant
+                try:
+                    add_history(chat_id, user_text_with_link, bot_text)
+                except Exception:
+                    print("error")
+            else:
+                public_url= "[error]//The server took too long to respond. Try again later.//"
+                yield sse_event("bot", public_url)
+            
         except Exception:
             yield sse_event("error", "Unexpected error during SSE streaming")
             return

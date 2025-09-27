@@ -211,7 +211,17 @@ export function parseMarkdown(text) {
   // Math Blocks (KaTeX)
   text = text.replace(/\$\$([\s\S]+?)\$\$/g, '<div class="math-block">\\[$1\\]</div>');
   text = text.replace(/\$([^\$]+?)\$/g, '<span class="math-inline">\\($1\\)</span>');
-  // Format block math environments: \[ ... \]
+
+  text = text.replace(
+    /\[error\]\/\/(.+?)\/\//g,
+    `<div class="error-box flex items-center gap-2 p-3 border-l-1 border-red-500 bg-red-50 text-red-800 rounded-xl">
+       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+         <path fill-rule="evenodd" d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zm-9-4a1 1 0 012 0v4a1 1 0 01-2 0V6zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd" />
+       </svg>
+       <span>$1</span>
+     </div>`
+  );
+  
   
 
   
