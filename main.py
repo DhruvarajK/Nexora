@@ -1187,74 +1187,85 @@ async def run_code(req: RunCodeRequest):
 LOGO_FILE_PATH = os.path.join("assets", "nex.jpeg")
 
 @app.post("/export_pdf")
-async def export_pdf(data: dict):
+async def export_pdf(data: str = Form(...)):
     start_time = time.time()
-    content = data.get("content", "")
-    chat_id = data.get("chat_id", "new_chat")
+    logger.info("Received request to /export_pdf")
     
-    if not content:
-        logger.error("No content provided for PDF export")
-        raise HTTPException(status_code=400, detail="No content provided")
-    
-    # Check for dependencies early
-    if not shutil.which("pandoc") or not shutil.which("pdflatex"):
-        detail = "Pandoc and/or pdfLaTeX is not installed or not in PATH."
-        logger.error(detail)
-        raise HTTPException(status_code=500, detail=detail)
+    try:
+        # Log raw data for debugging
+        logger.debug(f"Raw form data: {data[:100] + '...' if len(data) > 100 else data}")
         
-    # --- Start: Emoji Stripping Logic ---
-    # This regex attempts to match a wide range of Unicode emoji characters.
-    # It might not catch ALL emojis, especially newer ones, but it's a good start.
-    # For a more comprehensive solution, consider a dedicated library like 'emoji'.
-    emoji_pattern = re.compile(
-        "["
-        "\U0001F600-\U0001F64F"  # emoticons
-        "\U0001F300-\U0001F5FF"  # symbols & pictographs
-        "\U0001F680-\U0001F6FF"  # transport & map symbols
-        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        "\U00002702-\U000027B0"
-        "\U000024C2-\U0001F251"
-        "]+",
-        flags=re.UNICODE
-    )
-    content = emoji_pattern.sub(r'', content)
-    logger.info("Emojis stripped from content.")
-    # --- End: Emoji Stripping Logic ---
-
-    # Use a temporary directory which is automatically cleaned up
-    with tempfile.TemporaryDirectory() as tmpdir:
-        md_file = os.path.join(tmpdir, "content.md")
-        pdf_file = os.path.join(tmpdir, "output.pdf")
-        
-        logger.info(f"Processing content (length: {len(content)} chars, chat_id: {chat_id})")
-        
-        # Write the markdown content to a temporary file
+        # Parse JSON data from form field
         try:
-            with open(md_file, "w", encoding="utf-8") as f:
-                f.write(content)
-            logger.info(f"Markdown file written: {md_file}")
-        except Exception as e:
-            logger.error(f"Failed to write markdown file: {str(e)}")
-            raise HTTPException(status_code=500, detail="Failed to write markdown file")
-            
-        # Base Pandoc command
-        pandoc_cmd = [
-            "pandoc", md_file, "-o", pdf_file,
-            "--pdf-engine=pdflatex",
-            "-V", "geometry:margin=1in"
-        ]
-        
-        # --- Logic to add footer with logo ---
-        if os.path.exists(LOGO_FILE_PATH):
-            logo_filename = os.path.basename(LOGO_FILE_PATH)
-            header_file = os.path.join(tmpdir, "header.tex")
+            data_dict = json.loads(data)
+            logger.info("JSON parsed successfully")
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parsing failed: {str(e)}")
+            raise HTTPException(status_code=422, detail=f"Invalid JSON in data field: {str(e)}")
 
-            # 1. Copy logo into the temp directory so LaTeX can find it
-            shutil.copy(LOGO_FILE_PATH, os.path.join(tmpdir, logo_filename))
+        content = data_dict.get("content", "")
+        chat_id = data_dict.get("chat_id", "new_chat")
+        logger.info(f"Extracted content length: {len(content)}, chat_id: {chat_id}")
 
-            # 2. Create the LaTeX header file with footer commands
-            # This uses the 'fancyhdr' package to customize footers
-            latex_header = f"""
+        if not content:
+            logger.error("No content provided for PDF export")
+            raise HTTPException(status_code=400, detail="No content provided")
+
+        # Check for dependencies early
+        if not shutil.which("pandoc") or not shutil.which("pdflatex"):
+            detail = "Pandoc and/or pdfLaTeX is not installed or not in PATH."
+            logger.error(detail)
+            raise HTTPException(status_code=500, detail=detail)
+
+        # --- Start: Emoji Stripping Logic ---
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map symbols
+            "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+            "\U00002702-\U000027B0"
+            "\U000024C2-\U0001F251"
+            "]+",
+            flags=re.UNICODE
+        )
+        content = emoji_pattern.sub(r'', content)
+        logger.info("Emojis stripped from content.")
+        # --- End: Emoji Stripping Logic ---
+
+        # Use a temporary directory which is automatically cleaned up
+        with tempfile.TemporaryDirectory() as tmpdir:
+            md_file = os.path.join(tmpdir, "content.md")
+            pdf_file = os.path.join(tmpdir, "output.pdf")
+
+            logger.info(f"Processing content (length: {len(content)} chars, chat_id: {chat_id})")
+
+            # Write the markdown content to a temporary file
+            try:
+                with open(md_file, "w", encoding="utf-8") as f:
+                    f.write(content)
+                logger.info(f"Markdown file written: {md_file}")
+            except Exception as e:
+                logger.error(f"Failed to write markdown file: {str(e)}")
+                raise HTTPException(status_code=500, detail="Failed to write markdown file")
+
+            # Base Pandoc command
+            pandoc_cmd = [
+                "pandoc", md_file, "-o", pdf_file,
+                "--pdf-engine=pdflatex",
+                "-V", "geometry:margin=1in"
+            ]
+
+            # --- Logic to add footer with logo ---
+            if os.path.exists(LOGO_FILE_PATH):
+                logo_filename = os.path.basename(LOGO_FILE_PATH)
+                header_file = os.path.join(tmpdir, "header.tex")
+
+                # 1. Copy logo into the temp directory so LaTeX can find it
+                shutil.copy(LOGO_FILE_PATH, os.path.join(tmpdir, logo_filename))
+
+                # 2. Create the LaTeX header file with footer commands
+                latex_header = f"""
 \\usepackage{{fancyhdr}}
 \\usepackage{{graphicx}} % Required for including images
 \\pagestyle{{fancy}}
@@ -1264,52 +1275,51 @@ async def export_pdf(data: dict):
 \\fancyfoot[L]{{\\includegraphics[height=0.8cm]{{{logo_filename}}}}} % Logo on the left
 \\fancyfoot[R]{{Page \\thepage}} % Page number on the right
 """
-            with open(header_file, "w", encoding="utf-8") as f:
-                f.write(latex_header)
+                with open(header_file, "w", encoding="utf-8") as f:
+                    f.write(latex_header)
 
-            # 3. Add the header include flag to the Pandoc command
-            pandoc_cmd.extend(["-H", header_file])
-            logger.info("Logo and footer configuration will be applied.")
-        else:
-            logger.warning(f"Logo file not found at {LOGO_FILE_PATH}. PDF will be generated without a logo.")
+                # 3. Add the header include flag to the Pandoc command
+                pandoc_cmd.extend(["-H", header_file])
+                logger.info("Logo and footer configuration will be applied.")
+            else:
+                logger.warning(f"Logo file not found at {LOGO_FILE_PATH}. PDF will be generated without a logo.")
 
-        # --- Run Pandoc to generate the PDF ---
-        try:
-            logger.info(f"Running Pandoc command: {' '.join(pandoc_cmd)}")
-            result = subprocess.run(  # Capture output for debugging
-                pandoc_cmd,
-                check=True,
-                capture_output=True,
-                text=True,
-                cwd=tmpdir,  # Crucial: run from tmpdir to find logo and header
-                timeout=60
-            )
-            logger.info(f"Pandoc completed in {time.time() - start_time:.2f} seconds")
-            logger.debug(f"Pandoc stdout: {result.stdout}") # Log stdout for success cases
-            
-            with open(pdf_file, "rb") as f:
-                pdf_content = f.read()
-            logger.info(f"PDF file read, size: {len(pdf_content)} bytes")
-            
-            return StreamingResponse(
-                io.BytesIO(pdf_content),
-                media_type="application/pdf",
-                headers={"Content-Disposition": f"attachment; filename=chat_{chat_id}.pdf"}
-            )
-            
-        except subprocess.TimeoutExpired:
-            logger.error("Pandoc timed out after 60 seconds")
-            raise HTTPException(status_code=500, detail="PDF generation timed out")
-        except subprocess.CalledProcessError as e:
-            # Provide the actual error from LaTeX for easier debugging
-            error_details = f"Pandoc/LaTeX Error:\nSTDOUT: {e.stdout}\nSTDERR: {e.stderr}"
-            logger.error(error_details)
-            raise HTTPException(status_code=500, detail=error_details)
-        except Exception as e:
-            logger.error(f"Unexpected error during PDF generation: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Failed to generate PDF")
+            # --- Run Pandoc to generate the PDF ---
+            try:
+                logger.info(f"Running Pandoc command: {' '.join(pandoc_cmd)}")
+                result = subprocess.run(
+                    pandoc_cmd,
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    cwd=tmpdir,  # Crucial: run from tmpdir to find logo and header
+                    timeout=60
+                )
+                logger.info(f"Pandoc completed in {time.time() - start_time:.2f} seconds")
+                logger.debug(f"Pandoc stdout: {result.stdout}")
 
+                with open(pdf_file, "rb") as f:
+                    pdf_content = f.read()
+                logger.info(f"PDF file read, size: {len(pdf_content)} bytes")
 
+                return StreamingResponse(
+                    io.BytesIO(pdf_content),
+                    media_type="application/pdf",
+                    headers={"Content-Disposition": f"attachment; filename=chat_{chat_id}.pdf"}
+                )
 
+            except subprocess.TimeoutExpired:
+                logger.error("Pandoc timed out after 60 seconds")
+                raise HTTPException(status_code=500, detail="PDF generation timed out")
+            except subprocess.CalledProcessError as e:
+                error_details = f"Pandoc/LaTeX Error:\nSTDOUT: {e.stdout}\nSTDERR: {e.stderr}"
+                logger.error(error_details)
+                raise HTTPException(status_code=500, detail=error_details)
+            except Exception as e:
+                logger.error(f"Unexpected error during PDF generation: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to generate PDF")
+    except Exception as e:
+        logger.error(f"Unexpected error in export_pdf: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 

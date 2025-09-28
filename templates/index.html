@@ -2502,44 +2502,52 @@ async function loadHistoryPanel() {
 // Example usage:
 // Assuming you have a bubble element: copyMessage(yourBubbleElement);
      
-        async function exportToPDF(bubble, text) {
-            try {
-                showNotification("Exporting..");
-                const response = await fetch('/export_pdf', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: text, chat_id: activeChatId })
-                });
-                if (!response.ok) {
-                    const errorText = await response.text(); // Capture response body for error details
-                    console.error('Export PDF failed:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        body: errorText
-                    });
-                    throw new Error(`Failed to export PDF: ${response.status} - ${errorText}`);
-                }
-                showNotification("Exported..");
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `chat_${activeChatId || 'new'}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Failed to export PDF:', {
-                    message: error.message,
-                    stack: error.stack,
-                    inputContent: text, // Log the input content for debugging
-                    chatId: activeChatId
-                });
-                const errmsg = `Export Failed: ${error.message}`;
-                showNotification(errmsg);
-            }
+async function exportToPDF(bubble, text) {
+    try {
+        showNotification("Exporting..");
+
+        // Validate input
+        if (!text) {
+            throw new Error("Content is empty");
         }
+
+        // Create a form element
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/export_pdf';
+        form.target = '_blank'; // Open in new tab
+        form.style.display = 'none'; // Hide the form
+
+        // Create JSON payload
+        const payload = JSON.stringify({
+            content: text,
+            chat_id: activeChatId || 'new'
+        });
+
+        // Add JSON payload as a hidden input
+        const dataInput = document.createElement('input');
+        dataInput.type = 'hidden';
+        dataInput.name = 'data'; // Match server endpoint's expected field
+        dataInput.value = payload;
+        form.appendChild(dataInput);
+
+        // Append form to body and submit
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        showNotification("Exported..");
+    } catch (error) {
+        console.error('Failed to export PDF:', {
+            message: error.message,
+            stack: error.stack,
+            inputContent: text?.substring(0, 100) + (text?.length > 100 ? '...' : ''), // Log first 100 chars
+            chatId: activeChatId
+        });
+        const errmsg = `Export Failed: ${error.message}`;
+        showNotification(errmsg);
+    }
+}
 
         let uploadedFiles = []; // Store uploaded files
         const uploadBtn = document.getElementById('upload-btn');
