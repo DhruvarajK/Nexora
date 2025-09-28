@@ -5,7 +5,7 @@ ENV TZ=Asia/Kolkata
 
 WORKDIR /app
 
-# Use IPv4, retries, no-install-recommends, and a shorter texlive set
+# Install dependencies and verify lmodern.sty
 RUN apt-get update -o Acquire::Retries=3 -o Acquire::ForceIPv4=true && \
     apt-get install -y --no-install-recommends \
       -o Acquire::Retries=3 -o Acquire::ForceIPv4=true \
@@ -19,6 +19,10 @@ RUN apt-get update -o Acquire::Retries=3 -o Acquire::ForceIPv4=true && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata && \
+    # Update TeX Live package database
+    texhash && \
+    # Verify lmodern.sty is installed
+    kpsewhich lmodern.sty && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
