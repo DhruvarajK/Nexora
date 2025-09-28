@@ -5,25 +5,31 @@ ENV TZ=Asia/Kolkata
 
 WORKDIR /app
 
-# Install dependencies and verify lmodern.sty
-RUN apt-get update -o Acquire::Retries=3 -o Acquire::ForceIPv4=true && \
-    apt-get install -y --no-install-recommends \
-      -o Acquire::Retries=3 -o Acquire::ForceIPv4=true \
+# Step 1: Update package list
+RUN apt-get update -o Acquire::Retries=10 -o Acquire::ForceIPv4=true
+
+# Step 2: Install dependencies
+RUN apt-get install -y --no-install-recommends \
+      -o Acquire::Retries=10 -o Acquire::ForceIPv4=true \
       tzdata \
       pandoc \
       texlive-latex-recommended \
       texlive-fonts-recommended \
       texlive-fonts-extra \
       python3 \
-      python3-pip && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+      python3-pip
+
+# Step 3: Configure timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    # Update TeX Live package database
-    texhash && \
-    # Verify lmodern.sty is installed
-    kpsewhich lmodern.sty && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    dpkg-reconfigure -f noninteractive tzdata
+
+# Step 4: Update TeX Live package database and verify lmodern.sty
+RUN texhash && \
+    kpsewhich lmodern.sty || { echo "Error: lmodern.sty not found"; exit 1; }
+
+# Step 5: Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 
