@@ -1,6 +1,3 @@
-// Updated script.js with reasoning support
-
-
 export function detectLanguage(code) {
   const patterns = [
     { lang: "javascript", regex: /\b(function|const|let|var|=>|console\.log|import |export |document\.|window\.|async|await|fetch|Promise)\b/g, weight: 2 },

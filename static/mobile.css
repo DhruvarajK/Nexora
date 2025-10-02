@@ -838,6 +838,7 @@
     .bubble li {
       font-size: 14px;
       line-height: 1.5;
+      margin-left: 15px;
     }
   
     /* Adjust blockquote padding */
