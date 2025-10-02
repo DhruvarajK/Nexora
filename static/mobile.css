@@ -842,6 +842,9 @@
     .bubble li {
       font-size: 14px;
       line-height: 1.5;
+    }
+
+    .bubble li {
       margin-left: 15px;
     }
   

@@ -1986,7 +1986,7 @@ display: none;
     align-items: center;
 }
 
-#close-modal-btn svg {
+#close-modal-btn svg, #close-files-modal-btn svg {
   width: 22px;
   height: 22px;
   color: black;

@@ -710,7 +710,11 @@
       .source-link:hover { background-color: rgba(255,255,255,0.03); }
     
       /* Full screen preview header / iframe */
-      #preview-header { background-color: rgba(255,255,255,0.02); color: #e6f4ff; border-bottom: 1px solid rgba(255,255,255,0.03); }
+      #preview-header {
+        background-color: rgb(0 0 0);
+        color: #ffffff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
       #preview-header button { color: #e6f4ff; background: transparent; }
       .prev-btns { background-color: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06); }
       #preview-iframe { background-color: #071022; border-color: rgba(255,255,255,0.06); }
@@ -796,6 +800,15 @@
   border: 1px solid #2d2d2d;
 }
 
+#desktop-view-btn.isactive {
+  background-color: #101010;
+  box-shadow: 0px 0px 10px rgb(0 0 0);
+}
+
+#mobile-view-btn.isactive {
+  background-color: #101010;
+  box-shadow: 0px 0px 10px rgb(0 0 0);
+}
 
 @media (max-width: 768px) {
 .upper-tools {
