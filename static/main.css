@@ -68,11 +68,19 @@
             overflow: hidden;
             flex-wrap: nowrap;
             text-overflow: ellipsis;
-            width: 100px;
+            min-width: 72px;
             text-align: left;
+            font-weight: 400;
+            font-family: system-ui;
         }
   
             #history.collapsed { width: 56px;
+              display: block;
+
+             }
+             #history.collapsed .history-user-footer  {
+              display: none;
+              
 
              }
             .history-item {
@@ -86,7 +94,7 @@
           }
           .history-section {
             margin: 7px;
-            max-height: 500px;
+            max-height: 100%;
             overflow: hidden;
             padding: 10px 13px 7px 11px;
             border-radius: 12px;
@@ -807,12 +815,12 @@ body.light .modal-content p {
 
 
 #history {
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  overflow-x: hidden;
+  justify-content: space-between;
 }
-
 .new-chat-btn {
   display: flex;
   align-items: center;
@@ -854,9 +862,17 @@ svg.nav-icon {
 
 /* When the #history is NOT collapsed, apply the expanded styles */
 #history:not(.collapsed) #chat-list {
-  max-height: 500px; /* Or a sufficiently large value that covers its full expanded height */
+  max-height: 100%; 
   opacity: 1;
   padding-bottom: 50px;
+}
+
+.upper-tools {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  align-content: space-between;
+  flex-direction: column;
 }
 
 span.chat-list-timestamp {
@@ -1960,7 +1976,7 @@ display: none;
   .images-modal__close{ left: 9px;}
   span.desk-close {display: none;}
   span.mob-clos {display: flex;}
-  .new-img-btn {padding: 12px;margin: 7px;}
+
 
   .img-model-head {
     display: flex;

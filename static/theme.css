@@ -16,11 +16,29 @@
       color: #0f172a;
     }
 
+    @media (max-width: 768px) {
+      .upper-tools {
+        border-top: 1px solid #ebebeb78;
+        border-bottom: 1px solid #ebebeb78;
+      }
+      }
+      .user-avatar-btn {
+        background: #ffffff;
+      }
+
     #custom-notification {
       background-color: #ffffff;
       color: #333333;
       border: 1px solid #e0e0e0;
   }
+
+  .code-card {
+    background: #fbfbfbf2;
+    border: 1px solid #f1f1f1;
+}
+
+
+
     .chat-menu {
       background: #f9f9f9;
       border: 1px solid #d5d5d5;
@@ -69,6 +87,7 @@
     .toggle-btn, .toggle-history, .new-chat-btn, .close-btn {
       color: #111827;
       background: transparent;
+
     }
     .toggle-btn:hover, .toggle-history:hover, .new-chat-btn:hover, .close-btn:hover {
       background-color: rgba(56,56,56,0.08);
@@ -768,6 +787,24 @@
     background-color: #1e1e1e;
     color: #ffffff;
     border: 1px solid #414141;
+}
+
+.code-card {
+  background: #0e0e0e;
+  border-radius: var(--card-radius);
+  color: #e9e9e9;
+  border: 1px solid #2d2d2d;
+}
+
+
+@media (max-width: 768px) {
+.upper-tools {
+  border-top: 1px solid #1c1c1c78;
+  border-bottom: 1px solid #1c1c1c78;
+}
+}
+.user-avatar-btn {
+  background: #000000;
 }
 
   }

@@ -173,10 +173,32 @@
           </div>
       
           <div id="no-images-msg" class="images-modal__noimages" hidden>
-            <div style="display: flex; align-items:center;justify-content: center;" ><svg  width="43px" height="43px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.46814 17.5319C5.62291 19.7154 7.92876 20.5 12 20.5C17.6255 20.5 19.8804 19.002 20.3853 14.3853M4.46814 17.5319C3.77924 16.2292 3.5 14.4288 3.5 12C3.5 5.5 5.5 3.5 12 3.5C18.5 3.5 20.5 5.5 20.5 12C20.5 12.8745 20.4638 13.6676 20.3853 14.3853M4.46814 17.5319L7.58579 14.4142C8.36684 13.6332 9.63317 13.6332 10.4142 14.4142L10.5858 14.5858C11.3668 15.3668 12.6332 15.3668 13.4142 14.5858L15.5858 12.4142C16.3668 11.6332 17.6332 11.6332 18.4142 12.4142L20.3853 14.3853M10.691 8.846C10.691 9.865 9.864 10.692 8.845 10.692C7.827 10.692 7 9.865 7 8.846C7 7.827 7.827 7 8.845 7C9.864 7 10.691 7.827 10.691 8.846Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div> 
+            <div style="display: flex; align-items:center;justify-content: center;" ><svg   width="43px" height="43px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.46814 17.5319C5.62291 19.7154 7.92876 20.5 12 20.5C17.6255 20.5 19.8804 19.002 20.3853 14.3853M4.46814 17.5319C3.77924 16.2292 3.5 14.4288 3.5 12C3.5 5.5 5.5 3.5 12 3.5C18.5 3.5 20.5 5.5 20.5 12C20.5 12.8745 20.4638 13.6676 20.3853 14.3853M4.46814 17.5319L7.58579 14.4142C8.36684 13.6332 9.63317 13.6332 10.4142 14.4142L10.5858 14.5858C11.3668 15.3668 12.6332 15.3668 13.4142 14.5858L15.5858 12.4142C16.3668 11.6332 17.6332 11.6332 18.4142 12.4142L20.3853 14.3853M10.691 8.846C10.691 9.865 9.864 10.692 8.845 10.692C7.827 10.692 7 9.865 7 8.846C7 7.827 7.827 7 8.845 7C9.864 7 10.691 7.827 10.691 8.846Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div> 
             <div>Empty Gallery</div></div>
       
           <div id="images-grid" class="images-grid" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <div id="files-modal" class="images-modal" aria-hidden="true" role="dialog" aria-labelledby="files-modal-title">
+        <div class="images-modal__panel" role="document">
+          <div class="img-model-head">
+            <div style="display: flex;"><button id="close-files-modal-btn" class="images-modal__close" aria-label="Close"><span class="desk-close">&times;</span><span class="mob-clos"><svg width="15px" height="15px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.7071 4.29289C12.0976 4.68342 12.0976 5.31658 11.7071 5.70711L6.41421 11H20C20.5523 11 21 11.4477 21 12C21 12.5523 20.5523 13 20 13H6.41421L11.7071 18.2929C12.0976 18.6834 12.0976 19.3166 11.7071 19.7071C11.3166 20.0976 10.6834 20.0976 10.2929 19.7071L3.29289 12.7071C3.10536 12.5196 3 12.2652 3 12C3 11.7348 3.10536 11.4804 3.29289 11.2929L10.2929 4.29289C10.6834 3.90237 11.3166 3.90237 11.7071 4.29289Z" fill="currentColor"/>
+                </svg></span></button></div>
+              <div><h2 id="files-modal-title" class="images-modal__title">Code Files</h2></div>
+          </div>
+      
+          <div id="loading-files-global" class="images-modal__global-loading" aria-live="polite">
+            <div class="spinner-img"></div>
+          </div>
+      
+          <div id="no-files-msg" class="images-modal__noimages" hidden>
+            <div style="display: flex; align-items:center;justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M14 17.5L16.5 15L14 12.5M10 12.5L7.5 15L10 17.5M20 9.98822V17.2C20 18.8802 20 19.7202 19.673 20.362C19.3854 20.9265 18.9265 21.3854 18.362 21.673C17.7202 22 16.8802 22 15.2 22H8.8C7.11984 22 6.27976 22 5.63803 21.673C5.07354 21.3854 4.6146 20.9265 4.32698 20.362C4 19.7202 4 18.8802 4 17.2V6.8C4 5.11984 4 4.27976 4.32698 3.63803C4.6146 3.07354 5.07354 2.6146 5.63803 2.32698C6.27976 2 7.11984 2 8.8 2H12.0118C12.7455 2 13.1124 2 13.4577 2.08289C13.7638 2.15638 14.0564 2.27759 14.3249 2.44208C14.6276 2.6276 14.887 2.88703 15.4059 3.40589L18.5941 6.59411C19.113 7.11297 19.3724 7.3724 19.5579 7.67515C19.7224 7.94356 19.8436 8.2362 19.9171 8.5423C20 8.88757 20 9.25445 20 9.98822Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div> 
+            <div>No Files</div>
+          </div>
+      
+          <div id="files-grid" class="code-grid" aria-live="polite"></div>
         </div>
     </div>
     
@@ -765,28 +787,36 @@ async function loadHistoryPanel() {
                 </div>
             `;
 
-
+            const UpperTools = document.createElement('div');
+            UpperTools.className = 'upper-tools';
 
             const newChatBtn = document.createElement('div');
             newChatBtn.className = 'new-chat-btn';
             newChatBtn.onclick = createNewChat;
             newChatBtn.innerHTML = ' <div class="side-panel-ic"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="stroke-[2] "><path d="M10 4V4C8.13623 4 7.20435 4 6.46927 4.30448C5.48915 4.71046 4.71046 5.48915 4.30448 6.46927C4 7.20435 4 8.13623 4 10V13.6C4 15.8402 4 16.9603 4.43597 17.816C4.81947 18.5686 5.43139 19.1805 6.18404 19.564C7.03968 20 8.15979 20 10.4 20H14C15.8638 20 16.7956 20 17.5307 19.6955C18.5108 19.2895 19.2895 18.5108 19.6955 17.5307C20 16.7956 20 15.8638 20 14V14" stroke="currentColor" stroke-linecap="square"></path><path d="M12.4393 14.5607L19.5 7.5C20.3284 6.67157 20.3284 5.32843 19.5 4.5C18.6716 3.67157 17.3284 3.67157 16.5 4.5L9.43934 11.5607C9.15804 11.842 9 12.2235 9 12.6213V15H11.3787C11.7765 15 12.158 14.842 12.4393 14.5607Z" stroke="currentColor" stroke-linecap="square"></path></svg><h3  class="nav-text">New Chat</h3></div>'; 
-            historyPanel.appendChild(newChatBtn);
+            UpperTools.appendChild(newChatBtn);
 
             const ImgBtn = document.createElement('div');
             ImgBtn.className = 'new-img-btn';
-            ImgBtn.innerHTML = '<button class="side-panel-ic" id="view-images-btn"> <svg width="23px" height="23px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.46814 17.5319C5.62291 19.7154 7.92876 20.5 12 20.5C17.6255 20.5 19.8804 19.002 20.3853 14.3853M4.46814 17.5319C3.77924 16.2292 3.5 14.4288 3.5 12C3.5 5.5 5.5 3.5 12 3.5C18.5 3.5 20.5 5.5 20.5 12C20.5 12.8745 20.4638 13.6676 20.3853 14.3853M4.46814 17.5319L7.58579 14.4142C8.36684 13.6332 9.63317 13.6332 10.4142 14.4142L10.5858 14.5858C11.3668 15.3668 12.6332 15.3668 13.4142 14.5858L15.5858 12.4142C16.3668 11.6332 17.6332 11.6332 18.4142 12.4142L20.3853 14.3853M10.691 8.846C10.691 9.865 9.864 10.692 8.845 10.692C7.827 10.692 7 9.865 7 8.846C7 7.827 7.827 7 8.845 7C9.864 7 10.691 7.827 10.691 8.846Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 class="nav-text">Gallery</h3></button>'
-            historyPanel.appendChild(ImgBtn);
+            ImgBtn.innerHTML = '<button class="side-panel-ic" id="view-images-btn"> <svg class="nav-icon" width="23px" height="23px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.46814 17.5319C5.62291 19.7154 7.92876 20.5 12 20.5C17.6255 20.5 19.8804 19.002 20.3853 14.3853M4.46814 17.5319C3.77924 16.2292 3.5 14.4288 3.5 12C3.5 5.5 5.5 3.5 12 3.5C18.5 3.5 20.5 5.5 20.5 12C20.5 12.8745 20.4638 13.6676 20.3853 14.3853M4.46814 17.5319L7.58579 14.4142C8.36684 13.6332 9.63317 13.6332 10.4142 14.4142L10.5858 14.5858C11.3668 15.3668 12.6332 15.3668 13.4142 14.5858L15.5858 12.4142C16.3668 11.6332 17.6332 11.6332 18.4142 12.4142L20.3853 14.3853M10.691 8.846C10.691 9.865 9.864 10.692 8.845 10.692C7.827 10.692 7 9.865 7 8.846C7 7.827 7.827 7 8.845 7C9.864 7 10.691 7.827 10.691 8.846Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 class="nav-text">Gallery</h3></button>'
+            UpperTools.appendChild(ImgBtn);
+
+            const FilesBtn = document.createElement('div');
+            FilesBtn.className = 'new-img-btn';
+            FilesBtn.innerHTML = '<button class="side-panel-ic" id="view-files-btn"><svg class="nav-icon" id="file-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M14 17.5L16.5 15L14 12.5M10 12.5L7.5 15L10 17.5M20 9.98822V17.2C20 18.8802 20 19.7202 19.673 20.362C19.3854 20.9265 18.9265 21.3854 18.362 21.673C17.7202 22 16.8802 22 15.2 22H8.8C7.11984 22 6.27976 22 5.63803 21.673C5.07354 21.3854 4.6146 20.9265 4.32698 20.362C4 19.7202 4 18.8802 4 17.2V6.8C4 5.11984 4 4.27976 4.32698 3.63803C4.6146 3.07354 5.07354 2.6146 5.63803 2.32698C6.27976 2 7.11984 2 8.8 2H12.0118C12.7455 2 13.1124 2 13.4577 2.08289C13.7638 2.15638 14.0564 2.27759 14.3249 2.44208C14.6276 2.6276 14.887 2.88703 15.4059 3.40589L18.5941 6.59411C19.113 7.11297 19.3724 7.3724 19.5579 7.67515C19.7224 7.94356 19.8436 8.2362 19.9171 8.5423C20 8.88757 20 9.25445 20 9.98822Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 class="nav-text">Files</h3></button>';
+            UpperTools.appendChild(FilesBtn);
+
+            historyPanel.appendChild(UpperTools);
 
             const chatSection = document.createElement('div');
             chatSection.className = 'history-section';
             chatSection.innerHTML = '<div class="side-panel-ic"><svg class="nav-icon" id="hist-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="stroke-[2] "><path d="M4.4999 3L4.4999 8H9.49988M4.4999 7.99645C5.93133 5.3205 8.75302 3.5 11.9999 3.5C16.6943 3.5 20.4999 7.30558 20.4999 12C20.4999 16.6944 16.6943 20.5 11.9999 20.5C7.6438 20.5 4.05303 17.2232 3.55811 13" stroke="currentColor"></path><path d="M15 9L12 12V16" stroke="currentColor"></path></svg><h3 id="hist-ico" class="nav-text">Chats</h3></div><div id="chat-list"></div>';
             historyPanel.appendChild(chatSection);
 
-            const codeFilesSection = document.createElement('div');
-            codeFilesSection.className = 'history-section';
-            codeFilesSection.innerHTML = '<div class="side-panel-ic"><svg class="nav-icon" id="file-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M14 17.5L16.5 15L14 12.5M10 12.5L7.5 15L10 17.5M20 9.98822V17.2C20 18.8802 20 19.7202 19.673 20.362C19.3854 20.9265 18.9265 21.3854 18.362 21.673C17.7202 22 16.8802 22 15.2 22H8.8C7.11984 22 6.27976 22 5.63803 21.673C5.07354 21.3854 4.6146 20.9265 4.32698 20.362C4 19.7202 4 18.8802 4 17.2V6.8C4 5.11984 4 4.27976 4.32698 3.63803C4.6146 3.07354 5.07354 2.6146 5.63803 2.32698C6.27976 2 7.11984 2 8.8 2H12.0118C12.7455 2 13.1124 2 13.4577 2.08289C13.7638 2.15638 14.0564 2.27759 14.3249 2.44208C14.6276 2.6276 14.887 2.88703 15.4059 3.40589L18.5941 6.59411C19.113 7.11297 19.3724 7.3724 19.5579 7.67515C19.7224 7.94356 19.8436 8.2362 19.9171 8.5423C20 8.88757 20 9.25445 20 9.98822Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 id="file-ico" class="nav-text">Files</h3></div><div id="code-files-list"></div>';
-            historyPanel.appendChild(codeFilesSection);
+            //const codeFilesSection = document.createElement('div');
+            //codeFilesSection.className = 'history-section';
+           // codeFilesSection.innerHTML = '<div class="side-panel-ic"><svg class="nav-icon" id="file-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M14 17.5L16.5 15L14 12.5M10 12.5L7.5 15L10 17.5M20 9.98822V17.2C20 18.8802 20 19.7202 19.673 20.362C19.3854 20.9265 18.9265 21.3854 18.362 21.673C17.7202 22 16.8802 22 15.2 22H8.8C7.11984 22 6.27976 22 5.63803 21.673C5.07354 21.3854 4.6146 20.9265 4.32698 20.362C4 19.7202 4 18.8802 4 17.2V6.8C4 5.11984 4 4.27976 4.32698 3.63803C4.6146 3.07354 5.07354 2.6146 5.63803 2.32698C6.27976 2 7.11984 2 8.8 2H12.0118C12.7455 2 13.1124 2 13.4577 2.08289C13.7638 2.15638 14.0564 2.27759 14.3249 2.44208C14.6276 2.6276 14.887 2.88703 15.4059 3.40589L18.5941 6.59411C19.113 7.11297 19.3724 7.3724 19.5579 7.67515C19.7224 7.94356 19.8436 8.2362 19.9171 8.5423C20 8.88757 20 9.25445 20 9.98822Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><h3 id="file-ico" class="nav-text">Files</h3></div><div id="code-files-list"></div>';
+           // historyPanel.appendChild(codeFilesSection); 
 
             historyPanel.appendChild(userFooter);
 
@@ -825,7 +855,7 @@ async function loadHistoryPanel() {
         });
 
             // Fetch and render both
-            await Promise.all([loadUserChats(), loadCodeFiles()]);
+            await loadUserChats();
 
         } catch (error) {
             console.error("Failed to load history panel:", error);
@@ -1031,31 +1061,6 @@ async function loadHistoryPanel() {
           }
           
 
-        async function loadCodeFiles() {
-            const codeFilesList = document.getElementById('code-files-list');
-            if (!codeFilesList) return;
-
-            try {
-                const res = await fetch('/code-files');
-                const files = await res.json();
-                codeFilesList.innerHTML = ''; // Clear previous list
-                files.forEach(file => {
-                    const div = document.createElement('div');
-                    div.className = 'code-file-item';
-                    div.textContent = file.filename;
-                    div.dataset.fileId = file.id;
-                    // On click, open the file in the canvas
-                    div.onclick = () => {
-                        openCanvas(file.code, file.filename);
-                        currentOpenFile = { id: file.id, filename: file.filename };
-                    };
-                    codeFilesList.appendChild(div);
-                });
-            } catch (error) {
-                console.error("Failed to load code files:", error);
-                codeFilesList.innerHTML = '<p style="color: #ff6b6b;">Error loading files.</p>';
-            }
-        }
         
         
         
@@ -2089,7 +2094,7 @@ async function loadHistoryPanel() {
                         });
                         if (res.ok) {
                             showNotification('File saved');
-                            await loadCodeFiles(); // Refresh the file list
+                            
                             const newFile = await res.json();
                             currentOpenFile = { id: newFile.id, filename: newFile.filename }; // Update current file state
                         } else {
@@ -2289,6 +2294,113 @@ async function loadHistoryPanel() {
                 };
             }
         }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const filesModal = document.getElementById('files-modal');
+            const closeFilesBtn = document.getElementById('close-files-modal-btn');
+            const loadingFilesGlobal = document.getElementById('loading-files-global');
+            const noFilesMsg = document.getElementById('no-files-msg');
+            const filesGrid = document.getElementById('files-grid');
+        
+            function openFilesModal() {
+                if (filesModal) {
+                    filesModal.style.display = 'flex';
+                    filesModal.setAttribute('aria-hidden', 'false');
+                    if (loadingFilesGlobal) loadingFilesGlobal.style.display = 'flex';
+                    if (noFilesMsg) noFilesMsg.hidden = true;
+                    if (filesGrid) filesGrid.innerHTML = '';
+                }
+            }
+        
+            function closeFilesModal() {
+                if (filesModal) {
+                    filesModal.style.display = 'none';
+                    filesModal.setAttribute('aria-hidden', 'true');
+                }
+            }
+        
+            if (filesModal) {
+                filesModal.addEventListener('click', (ev) => {
+                    if (ev.target === filesModal) closeFilesModal();
+                });
+            }
+        
+            if (closeFilesBtn) closeFilesBtn.addEventListener('click', closeFilesModal);
+        
+            document.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Escape' && filesModal && filesModal.style.display === 'flex') {
+                    closeFilesModal();
+                }
+            });
+        
+            async function fetchAndRenderFiles() {
+                try {
+                    const res = await fetch('/code-files');
+                    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                    const files = await res.json();
+                    
+                    if (loadingFilesGlobal) loadingFilesGlobal.style.display = 'none';
+                    
+                    if (!files || files.length === 0) {
+                        if (noFilesMsg) noFilesMsg.hidden = false;
+                        return;
+                    }
+        
+                    if (filesGrid) {
+                        filesGrid.innerHTML = '';
+                        filesGrid.style.display = 'grid';
+                    }
+        
+                    files.forEach(file => {
+                        const card = document.createElement('div');
+                        card.className = 'code-card'; 
+                        card.style.cursor = 'pointer';
+                        
+                        const fileIcon = document.createElement('div');
+                        fileIcon.className = 'code-thumb';
+                        fileIcon.style.display = 'flex';
+                        fileIcon.style.alignItems = 'center';
+                        fileIcon.style.justifyContent = 'center';
+                        fileIcon.style.fontSize = '48px';
+                        fileIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M14 17.5L16.5 15L14 12.5M10 12.5L7.5 15L10 17.5M20 9.98822V17.2C20 18.8802 20 19.7202 19.673 20.362C19.3854 20.9265 18.9265 21.3854 18.362 21.673C17.7202 22 16.8802 22 15.2 22H8.8C7.11984 22 6.27976 22 5.63803 21.673C5.07354 21.3854 4.6146 20.9265 4.32698 20.362C4 19.7202 4 18.8802 4 17.2V6.8C4 5.11984 4 4.27976 4.32698 3.63803C4.6146 3.07354 5.07354 2.6146 5.63803 2.32698C6.27976 2 7.11984 2 8.8 2H12.0118C12.7455 2 13.1124 2 13.4577 2.08289C13.7638 2.15638 14.0564 2.27759 14.3249 2.44208C14.6276 2.6276 14.887 2.88703 15.4059 3.40589L18.5941 6.59411C19.113 7.11297 19.3724 7.3724 19.5579 7.67515C19.7224 7.94356 19.8436 8.2362 19.9171 8.5423C20 8.88757 20 9.25445 20 9.98822Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        
+                        const filename = document.createElement('p');
+                        filename.className = 'code-title';
+                        filename.textContent = file.filename;
+                        filename.style.fontWeight = '600';
+                        
+                        card.appendChild(fileIcon);
+                        card.appendChild(filename);
+                        
+                        card.onclick = () => {
+                            openCanvas(file.code, file.filename);
+                            currentOpenFile = { id: file.id, filename: file.filename };
+                            closeFilesModal();
+                        };
+                        
+                        if (filesGrid) filesGrid.appendChild(card);
+                    });
+        
+                } catch (err) {
+                    if (loadingFilesGlobal) loadingFilesGlobal.style.display = 'none';
+                    if (noFilesMsg) {
+                        noFilesMsg.hidden = false;
+                        noFilesMsg.textContent = 'Error loading files. Please try again.';
+                    }
+                    console.error('Error fetching files:', err);
+                }
+            }
+        
+            // Open modal button delegation
+            document.addEventListener('click', function(event) {
+                const btn = event.target.closest && event.target.closest('#view-files-btn');
+                if (btn) {
+                    openFilesModal();
+                    fetchAndRenderFiles();
+                }
+            });
+        });
         
         
 
@@ -3173,6 +3285,8 @@ async function exportToPDF(bubble, text) {
           // If you need to open programmatically: window.CustomImageLightbox.open(url);
         });
         </script>
+
+
         
 <script defer src="/static/search-panel.js"></script>
 <script defer src="/static/internet.js"></script>

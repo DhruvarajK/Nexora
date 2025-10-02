@@ -99,8 +99,16 @@
         transition: left 0.3s ease;
         background: #ffffff;
         overflow-y: auto;
+        padding-top: 60px;
     }
-    
+    .upper-tools {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border-top: 1px solid #ebebeb78;
+      border-bottom: 1px solid #ebebeb78;
+      justify-content: space-around;
+  }
     #history.open { 
         left: 0; 
     }
@@ -111,19 +119,34 @@
     }
 
     .new-chat-btn {
-        padding: 12px;
-        margin: 8px;
-        font-size: 0.9rem;
-    }
+      padding: 15px 19px;
+      margin: 0;
+      font-size: 0.9rem;
+      border-radius: 0px;
+  }
+
+
+
+
+  .new-img-btn {
+    padding: 15px 19px;
+    margin: 0;
+    font-size: 0.9rem;
+    border-radius: 0px;
+  }
 
     .history-section {
-      margin: 8px;
       padding: 0px;
   }
     .history-item {
         padding: 12px 16px;
         font-size: 0.9rem;
     }
+
+    #history:not(.collapsed) #chat-list {
+      max-height: 620px; 
+    }
+    
 
     .history-section:hover {
         background-color: transparent;
@@ -136,7 +159,7 @@
     .chat-list-item {
         padding: 8px 10px;
         margin-bottom: 8px;
-        font-size: 14px;
+        font-size: 15px;
     }
     .search-dropdown {
         margin-right: 0 ; 
@@ -463,9 +486,10 @@
     svg.nav-icon {
         width: 23px;
         height: 23px;
+        opacity: 0.8;
     }
 
-    svg#hist-ico, svg#file-ico {
+    svg#hist-ico{
       display: none;
   }
     h3#hist-ico, h3#file-ico {
@@ -699,7 +723,6 @@
         position: fixed;
         top: 0; left: -100%;
         width: 80%; height: 100%;
-        display: block;
         z-index: 150;
         border-right: none;
         box-shadow: 2px 0 8px rgba(0,0,0,0.2);
@@ -1013,28 +1036,26 @@
 
 
   .history-user-footer {
-    position: absolute;
-    left: 3px;
-    bottom: 6px;
     display: flex;
     align-items: center;
     gap: 8px;
     z-index: 40;
     pointer-events: auto;
+    width: 100%;
 }
   
-  .user-avatar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: pointer;
-    user-select: none;
-    font-family: inherit;
-  }
+.user-avatar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+}
   
   .user-avatar-btn:focus { outline: 2px solid rgba(59,130,246,0.4); }
   

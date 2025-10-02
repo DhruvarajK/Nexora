@@ -52,6 +52,29 @@
 
     /* Small helper if tailwind 'hidden' isn't present in runtime build */
     .hidden { display: none !important; }
+
+    /* Spinner styles (self-contained, doesn't rely on Tailwind utilities) */
+    .btn-spinner {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      vertical-align: middle;
+      margin-right: .625rem; /* 10px */
+    }
+    .spin {
+      animation: spin 1s linear infinite;
+      transform-origin: 50% 50%;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Optional visual when disabled */
+    .btn-disabled {
+      opacity: 0.85;
+      cursor: default;
+      pointer-events: none;
+    }
   </style>
 </head>
 
@@ -97,16 +120,22 @@
             </div>
 
             <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center">
-                <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-600 bg-black text-white focus:ring-white"/>
-                <label for="remember-me" class="ml-2 text-gray-400">Remember me</label>
-              </div>
               <a href="#" class="font-medium text-gray-300 hover:text-white transition">Forgot password?</a>
             </div>
 
             <div>
-              <button type="submit" class="flex w-full justify-center rounded-3xl bg-white py-3 px-4 text-sm font-semibold text-black shadow-sm transition-transform duration-200 ease-in-out hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white active:scale-95">
-                Log In
+              <!-- Login button with embedded spinner and text spans -->
+              <button
+                id="login-button"
+                type="submit"
+                class="flex w-full items-center justify-center rounded-3xl bg-white py-3 px-4 text-sm font-semibold text-black shadow-sm transition-transform duration-200 ease-in-out hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-white active:scale-95"
+                aria-live="polite"
+              >
+                <!-- spinner SVG is hidden by default -->
+                <svg class="btn-spinner spin hidden" viewBox="0 0 50 50" aria-hidden="true" focusable="false">
+                  <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-dasharray="31.4 31.4" />
+                </svg>
+                <span id="login-btn-text">Log In</span>
               </button>
             </div>
           </form>
@@ -171,7 +200,7 @@
     </div>
   </div>
 
-  <!-- Small script to toggle views in-place -->
+  <!-- Small script to toggle views in-place + spinner handling -->
   <script>
     (function () {
       const root = document.querySelector('.bg-hero') || document.getElementById('page-root');
@@ -243,6 +272,103 @@
       // Respect direct links: if URL has #register show register on load
       if (location.hash === '#register') show('register');
       if (location.hash === '#login') show('login');
+
+      /* ---------- Spinner and disable-on-submit logic for login button ---------- */
+      /* ---------- Spinner and disable-on-submit logic for login button (REPLACE THIS BLOCK) ---------- */
+const loginForm = document.getElementById('login-form');
+const loginButton = document.getElementById('login-button');
+const spinner = loginButton.querySelector('.btn-spinner');
+const btnText = document.getElementById('login-btn-text');
+
+function showSpinner(text = 'Logging in...') {
+  spinner.classList.remove('hidden');
+  btnText.textContent = text;
+  loginButton.classList.add('btn-disabled');
+  loginButton.disabled = true;                     // disable now (after we intercepted submit)
+  loginButton.setAttribute('aria-disabled', 'true');
+  loginButton.setAttribute('aria-busy', 'true');
+}
+
+function hideSpinner() {
+  spinner.classList.add('hidden');
+  btnText.textContent = 'Log In';
+  loginButton.classList.remove('btn-disabled');
+  loginButton.disabled = false;
+  loginButton.removeAttribute('aria-disabled');
+  loginButton.removeAttribute('aria-busy');
+}
+
+/* Submit handler: validate, show spinner, send via fetch, handle success/failure */
+loginForm.addEventListener('submit', function (ev) {
+  ev.preventDefault();
+
+  // If browser validation fails, show validation UI and don't proceed.
+  if (!loginForm.checkValidity()) {
+    // reportValidity shows native UI messages
+    loginForm.reportValidity();
+    return;
+  }
+
+  // Show spinner + disable button (we do this AFTER validation so we don't interfere with native UI)
+  showSpinner();
+
+  // Prepare form data to send (progressive enhancement)
+  const action = loginForm.getAttribute('action') || window.location.href;
+  const method = (loginForm.getAttribute('method') || 'POST').toUpperCase();
+  const formData = new FormData(loginForm);
+
+  // Send as same-origin fetch; server should accept standard form posts.
+  fetch(action, {
+    method,
+    body: formData,
+    credentials: 'same-origin',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' } // helpful for server-side detection
+  })
+    .then(async (res) => {
+      // If the server redirected, follow it
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+
+      if (res.ok) {
+        // Try parse JSON redirect (optional)
+        try {
+          const data = await res.json().catch(() => null);
+          if (data && data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
+        } catch (e) { /* ignore JSON parse errors */ }
+
+        // Fallback: reload page — server likely set session/cookie
+        window.location.reload();
+      } else {
+        // Non-2xx: show error and re-enable the button
+        let text;
+        try {
+          text = (await res.json()).message || (await res.text());
+        } catch (e) {
+          text = 'Login failed. Please check your credentials.';
+        }
+        hideSpinner();
+        // Minimal inline error feedback — you can replace with a nicer UI insertion
+        alert(text || 'Login failed. Please try again.');
+      }
+    })
+    .catch((err) => {
+      // Network error — re-enable the button & stop spinner
+      hideSpinner();
+      console.error('Login request failed:', err);
+      alert('Network error. Please try again.');
+    });
+});
+
+/* Optional helper: if you have other code that needs to programmatically re-enable the button,
+   call hideSpinner() when appropriate (e.g. after an AJAX failure handler) */
+
+
+
     })();
   </script>
 </body>
