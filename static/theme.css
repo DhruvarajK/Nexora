@@ -20,6 +20,11 @@
       .upper-tools {
         border-bottom: 1px solid #ebebeb78;
       }
+
+      svg.nav-icon {
+        color: #1e1e1e;
+    }
+
       }
       .user-avatar-btn {
         background: #ffffff;

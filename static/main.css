@@ -70,10 +70,11 @@
             text-overflow: ellipsis;
             min-width: 72px;
             text-align: left;
-            font-weight: 400;
-            font-family: system-ui;
+            font-weight: 500;
+            font-family: inherit;
+            font-size: 15px;
         }
-  
+
             #history.collapsed { width: 56px;
               display: block;
 
@@ -2075,4 +2076,13 @@ ease;
 #history.collapsed .history-search {
   padding: 0;
   margin: 10px 6px;
+}
+
+
+.new-agent-btn{
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  display: flex;
 }
