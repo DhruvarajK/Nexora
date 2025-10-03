@@ -105,7 +105,6 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      border-top: 1px solid #ebebeb78;
       border-bottom: 1px solid #ebebeb78;
       justify-content: space-around;
   }
@@ -758,6 +757,16 @@
         height: 20px;
     }
 
+    .history-search input {
+      width: 87%;
+      padding: 13px 2px 13px 42px;
+    }
+
+    .history-search {
+      padding: 8px 8px;
+      margin: 0px;
+  }
+
 
 
     /* Tweak header */
@@ -992,15 +1001,15 @@
         position: fixed;
     }
 
-    .new-ch-tog {
+    .new-ch-tog{
         position: absolute;
-        top: 19px;
-        right: 10px;
+        top: 16px;
+        right: 9px;
         z-index: 1;
     }
     svg.new-ch-tog-icon {
-        width: 27px;
-        height: 27px;
+        width: 26px;
+        height: 26px;
         stroke-width: 2;
     }
 

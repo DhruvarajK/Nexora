@@ -96,7 +96,7 @@
             margin: 7px;
             max-height: 100%;
             overflow: hidden;
-            padding: 10px 13px 7px 11px;
+            padding: 7px;
             border-radius: 12px;
         }
 
@@ -824,7 +824,7 @@ body.light .modal-content p {
 .new-chat-btn {
   display: flex;
   align-items: center;
-  padding: 13px 10px;
+  padding: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
   gap: 12px;
@@ -862,7 +862,7 @@ svg.nav-icon {
 
 /* When the #history is NOT collapsed, apply the expanded styles */
 #history:not(.collapsed) #chat-list {
-  max-height: 100%; 
+  min-height: 700px; 
   opacity: 1;
   padding-bottom: 50px;
 }
@@ -1916,13 +1916,19 @@ body:has(#inco-btn.expanded) .bubble-user {
   animation: spin 1s linear infinite;
 }
 
-.new-img-btn
- {
-    padding: 10px 10px;
-    margin: 5px;
-    border-radius: 10px;
-    transition: background-color 0.2s ease;
+.new-img-btn {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  display: flex;
 }
+
+svg#hist-ico {
+  width: 21px;
+  height: 21px;
+}
+
 .new-img-btn:hover{
   background-color: #3838381c;
 }
@@ -2021,18 +2027,19 @@ display: none;
 
 .history-search {
   padding: 3px 6px;
-  margin: 4px 6px 9px 2px;
+  margin: 0px;
   position: relative;
 }
 
 .history-search input {
-  width: 90%;
-  padding: 14px 10px 15px 52px;
+  width: 100%;
+  padding: 9px 0px 9px 45px;
   border: 1px solid #ededed;
   border-radius: 25px;
   font-size: 14px;
   background: white;
-  transition: all 0.2s ease;
+  transition: all 0.2s 
+ease;
 }
 
 .history-search input:focus {
@@ -2042,7 +2049,7 @@ display: none;
 .history-search-icon
  {
     position: absolute;
-    left: 30px;
+    left: 20px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -2053,4 +2060,19 @@ display: none;
 
 .chat-list-item.hidden-by-search {
   display: none !important;
+}
+
+
+#history.collapsed .history-search-icon {
+  left: 12px;
+  opacity: 1;
+}
+
+#history.collapsed .history-search input {
+  padding: 10px 21px;
+}
+
+#history.collapsed .history-search {
+  padding: 0;
+  margin: 10px 6px;
 }

@@ -18,7 +18,6 @@
 
     @media (max-width: 768px) {
       .upper-tools {
-        border-top: 1px solid #ebebeb78;
         border-bottom: 1px solid #ebebeb78;
       }
       }
@@ -812,7 +811,6 @@
 
 @media (max-width: 768px) {
 .upper-tools {
-  border-top: 1px solid #1c1c1c78;
   border-bottom: 1px solid #1c1c1c78;
 }
 }
