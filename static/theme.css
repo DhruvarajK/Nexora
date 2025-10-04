@@ -350,7 +350,7 @@
     }
   
     header {
-      background: linear-gradient(180deg, #071426, #0f1b2b);
+      background: black;
       box-shadow: 0 3px 10px rgba(2, 6, 23, 0.7);
       color: #e4e4e4;
     }

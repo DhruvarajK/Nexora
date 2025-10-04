@@ -38,3 +38,5 @@ ddgs
 qrcode[pil]
 huggingface-hub
 pyzbar
+pywebpush 
+cryptography

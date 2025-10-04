@@ -1,4 +1,3 @@
-
 import base64
 import mimetypes
 import os
@@ -10,7 +9,7 @@ import json
 import subprocess
 import uuid
 from fastapi import Body, Depends, FastAPI, HTTPException, Request,Form
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import httpx
@@ -30,10 +29,19 @@ import asyncio
 from dotenv import load_dotenv
 import io
 import requests
-from pathlib import Path
 from huggingface_hub import InferenceClient
 from PIL import Image
 import logging
+import pytz
+from datetime import timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from collections import defaultdict
+from fastapi import WebSocket
+from fastapi.responses import FileResponse
+
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -81,6 +89,16 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     date_of_birth DATE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  subscription_json TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
 conn.commit()
@@ -153,6 +171,21 @@ CREATE TABLE IF NOT EXISTS images (
 """)
 conn.commit()
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS agents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    time TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    prompt TEXT NOT NULL,
+    notification INTEGER NOT NULL DEFAULT 0,
+    paused INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+)
+""")
+conn.commit()
 
 def get_user_by_email(email: str):
     cursor.execute("SELECT * FROM users WHERE email = ?", (email.lower(),))
@@ -243,6 +276,23 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+ICON_DIR = os.path.join(os.path.dirname(__file__), "icons")
+
+os.makedirs(ICON_DIR, exist_ok=True)
+
+@app.get("/sw.js")
+async def service_worker():
+    sw_path = os.path.join(os.path.dirname(__file__),"sw.js")
+    return FileResponse(sw_path, media_type="application/javascript")
+
+@app.get("/manifest.json")
+async def serve_manifest():
+    manifest_path = os.path.join(os.path.dirname(__file__), "manifest.json")
+    return FileResponse(manifest_path, media_type="application/json")
+
+# Option 1: Mount the entire icons directory (RECOMMENDED)
+app.mount("/icons", StaticFiles(directory=ICON_DIR), name="icons")
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     from fastapi.responses import FileResponse
@@ -266,6 +316,15 @@ async def home(request: Request):
         return RedirectResponse(url="/login", status_code=302)
     # pass user to index.html; templates may use user['username'], user['email'], etc.
     return templates.TemplateResponse("index.html", {"request": request, "current_user": user})
+
+
+@app.get("/agent")
+async def home(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+    # pass user to index.html; templates may use user['username'], user['email'], etc.
+    return templates.TemplateResponse("agents.html", {"request": request, "current_user": user})
 
 
 @app.post("/register")
@@ -1323,3 +1382,242 @@ async def export_pdf(data: str = Form(...)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
+active_ws = defaultdict(list)
+tz = pytz.timezone('Asia/Kolkata')
+
+main_loop = asyncio.get_event_loop()
+scheduler = BackgroundScheduler(timezone=tz)
+scheduler.configure(timezone=tz)
+scheduler.start()
+
+import asyncio
+
+def schedule_agent(agent_id):
+    cursor.execute("SELECT * FROM agents WHERE id = ?", (agent_id,))
+    agent = cursor.fetchone()
+    if not agent or agent["paused"]:
+        return
+    freq = agent["frequency"]
+    time_str = agent["time"]
+    try:
+        hour, minute = map(int, time_str.split(':'))
+    except:
+        return
+
+    trigger = None
+    if freq == "once":
+        now = datetime.now(tz)
+        run_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if run_time <= now:
+            run_time += timedelta(days=1)
+        trigger = DateTrigger(run_date=run_time, timezone=tz)
+    elif freq == "daily":
+        trigger = CronTrigger(hour=hour, minute=minute, timezone=tz)
+    elif freq == "weekly":
+        trigger = CronTrigger(day_of_week='sun', hour=hour, minute=minute, timezone=tz)
+    elif freq == "monthly":
+        trigger = CronTrigger(day=1, hour=hour, minute=minute, timezone=tz)
+    else:
+        return
+
+    if trigger:
+        def job_wrapper(aid=agent_id):
+            asyncio.run_coroutine_threadsafe(run_agent_task(aid), main_loop)
+        scheduler.add_job(job_wrapper, trigger, id=str(agent_id))
+
+def unschedule_agent(agent_id):
+    try:
+        scheduler.remove_job(str(agent_id))
+    except:
+        pass
+
+async def run_agent_task(agent_id):
+    cursor.execute("SELECT * FROM agents WHERE id = ?", (agent_id,))
+    row = cursor.fetchone()
+    if not row:
+        return
+    agent = dict(row)
+    if agent.get("paused"):
+        return
+
+    user_id = agent["user_id"]
+    prompt = agent["prompt"]
+    title = agent["title"] + " - " + datetime.now(tz).strftime("%Y-%m-%d %H:%M")
+
+    # create chat record
+    cursor.execute("INSERT INTO chats (user_id, title, is_private) VALUES (?, ?, 0)", (user_id, title))
+    conn.commit()
+    chat_id = cursor.lastrowid
+
+    client = get_next_client()
+    memories = get_all_memories()
+    messages = [
+        {"role": "system", "content": "your name is zodio"},
+        {"role": "system", "content": memories},
+        {"role": "user", "content": parse_message_with_images(prompt)},
+    ]
+
+    # call the model (keep your existing call)
+    response = client.chat.completions.create(
+        model="qwen/qwen2.5-vl-32b-instruct:free",
+        stream=False,
+        messages=messages,
+    )
+    bot_text = response.choices[0].message.content
+    add_history(chat_id, prompt, bot_text)
+
+    # notification text
+    notification_msg = f"Nex Agent {agent['title']} triggered: {bot_text[:120]}..."
+    payload = {"title": f"Agent: {agent['title']}", "body": bot_text[:200], "chat_id": chat_id}
+
+    if agent.get("notification"):
+        # 1) Send via WebSocket if browser tabs are connected
+        sockets = list(active_ws.get(user_id, []))
+        if sockets:
+            for ws in sockets:
+                try:
+                    await ws.send_text(json.dumps({
+                        "type": "notification",
+                        "title": payload["title"],
+                        "message": payload["body"],
+                        "chat_id": chat_id,
+                        "from": "ws"
+                    }))
+                except Exception:
+                    try: active_ws[user_id].remove(ws)
+                    except ValueError: pass
+        else:
+            # 2) No active WS clients -> send push
+            try:
+                send_push_to_user(user_id, payload)
+            except Exception as e:
+                print("send_push_to_user failed:", e)
+
+
+
+def load_all_agents():
+    cursor.execute("SELECT id FROM agents WHERE paused = 0")
+    for r in cursor.fetchall():
+        schedule_agent(r["id"])
+
+class AgentCreate(BaseModel):
+    title: str
+    time: str
+    frequency: str
+    prompt: str
+    notification: bool = False
+
+class AgentUpdate(BaseModel):
+    paused: Optional[bool] = None
+
+@app.post("/agents")
+async def create_agent(agent: AgentCreate, user_id: int = Depends(get_current_user_id)):
+    cursor.execute(
+        "INSERT INTO agents (user_id, title, time, frequency, prompt, notification) VALUES (?, ?, ?, ?, ?, ?)",
+        (user_id, agent.title, agent.time, agent.frequency, agent.prompt, 1 if agent.notification else 0)
+    )
+    conn.commit()
+    new_id = cursor.lastrowid
+    schedule_agent(new_id)
+    return {"id": new_id}
+
+@app.get("/agents")
+async def get_agents(user_id: int = Depends(get_current_user_id)):
+    cursor.execute("SELECT * FROM agents WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+    rows = cursor.fetchall()
+    return [dict(r) for r in rows]
+
+@app.delete("/agents/{agent_id}")
+async def delete_agent(agent_id: int, user_id: int = Depends(get_current_user_id)):
+    cursor.execute("DELETE FROM agents WHERE id = ? AND user_id = ?", (agent_id, user_id))
+    conn.commit()
+    unschedule_agent(agent_id)
+    return {"status": "deleted"}
+
+@app.patch("/agents/{agent_id}")
+async def update_agent(agent_id: int, update: AgentUpdate, user_id: int = Depends(get_current_user_id)):
+    if update.paused is not None:
+        paused = 1 if update.paused else 0
+        cursor.execute("UPDATE agents SET paused = ? WHERE id = ? AND user_id = ?", (paused, agent_id, user_id))
+        conn.commit()
+        if paused:
+            unschedule_agent(agent_id)
+        else:
+            schedule_agent(agent_id)
+    return {"status": "ok"}
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    await websocket.accept()
+    active_ws[user_id].append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except:
+        active_ws[user_id].remove(websocket)
+
+load_all_agents()
+
+
+@app.post("/push/subscribe")
+async def push_subscribe(payload: dict, user_id: int = Depends(get_current_user_id)):
+    # payload expected to contain 'subscription' object from client
+    subscription = payload.get("subscription")
+    if not subscription:
+        return JSONResponse({"error":"no subscription"}, status_code=400)
+
+    # store as text
+    cursor.execute(
+        "INSERT INTO push_subscriptions (user_id, subscription_json) VALUES (?, ?)",
+        (user_id, json.dumps(subscription))
+    )
+    conn.commit()
+    return {"status":"ok"}
+
+
+from pywebpush import webpush, WebPushException
+
+
+VAPID_PUBLIC_KEY = "BA9K5QMrDJExEYWOeeqw7MmTrShZmvpQhaMZ8N5cTNzvzXo3Z5QuiLSLVtiKZPRK-44PA2xISIp5pO1nOnwULH8"
+VAPID_PRIVATE_KEY = "Q3zjIVpwPYCNPLb-d8R4zgGStVlopeda9JLAOZ8DMsk"
+VAPID_CLAIMS = {"sub": "mailto:you@yourdomain.com"}  # update email
+
+def send_push_to_user(user_id: int, payload: dict):
+    cursor.execute("SELECT id, subscription_json FROM push_subscriptions WHERE user_id = ?", (user_id,))
+    rows = cursor.fetchall()
+    seen_endpoints = set()
+
+    for row in rows:
+        sub_id = row["id"]
+        try:
+            sub = json.loads(row["subscription_json"])
+        except Exception:
+            cursor.execute("DELETE FROM push_subscriptions WHERE id = ?", (sub_id,))
+            conn.commit()
+            continue
+
+        endpoint = sub.get("endpoint")
+        if not endpoint or endpoint in seen_endpoints:
+            # duplicate or invalid -> delete duplicate record to keep DB clean
+            cursor.execute("DELETE FROM push_subscriptions WHERE id = ?", (sub_id,))
+            conn.commit()
+            continue
+
+        seen_endpoints.add(endpoint)
+
+        try:
+            webpush(
+                subscription_info=sub,
+                data=json.dumps(payload),
+                vapid_private_key=VAPID_PRIVATE_KEY,
+                vapid_claims=VAPID_CLAIMS
+            )
+        except WebPushException as ex:
+            status = None
+            try: status = ex.response.status_code
+            except Exception: pass
+            if status in (404, 410):
+                cursor.execute("DELETE FROM push_subscriptions WHERE id = ?", (sub_id,))
+                conn.commit()
+            else:
+                print("WebPush failed:", ex)

@@ -277,6 +277,7 @@ color: white;
   margin-top: 8px;
   justify-content: flex-end;
   color: #5c5c5c;
+  transform: scale(0.9);
 }
 
 .message-buttons button:hover {
@@ -293,6 +294,7 @@ color: white;
   display: inline-block;
   position: absolute;
   bottom: -30px;
+  left: 0px;
 }
 
 
