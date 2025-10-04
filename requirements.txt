@@ -41,3 +41,4 @@ pyzbar
 pywebpush 
 cryptography
 pytz
+apscheduler
