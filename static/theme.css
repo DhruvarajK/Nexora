@@ -104,7 +104,7 @@
     .expand-button.expanded {
       background-color: transparent;
       color: #4e4e4e;
-      border: 1px solid #bdbdbd;
+      border: 1.5px solid #dddddd;
   }
   
     #send-btn {

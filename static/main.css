@@ -202,7 +202,7 @@
           gap: 8px;
           font-family: Arial, sans-serif;
           font-size: 12px;
-          font-weight: 600;
+          font-weight: 800;
           box-sizing: border-box; 
       }
       
@@ -221,7 +221,7 @@
           width: max-content;
           background-color: transparent;
           color: #4e4e4e;
-          border: 1px solid #bdbdbd;
+          border: 1.5px solid #dddddd;
           padding-right: 15px; /* This padding will also be animated with the width */
       }
 

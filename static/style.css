@@ -486,7 +486,7 @@ padding-left: 0.5em;
     align-items: center;
     gap: 12px;
     padding: 6px 12px;
-    border-radius: 8px;
+    border-radius: 15px;
     cursor: pointer;
     transition: background-color 0.15s ease;
     border: none;
@@ -507,7 +507,7 @@ padding-left: 0.5em;
 }
 
 .search-option.selected {
-    background: #e7e7e7;
+    background: #e2e2e2;
     color: #333;
 }
 
