@@ -213,15 +213,17 @@
       
       .expand-button .label {
           opacity: 0;
-          transition: opacity 0.2s ease 0.1s;
+          transition: opacity 0s ease 0s;
       }
       
       .expand-button.expanded {
           width: max-content;
-          background-color: #161616;
-          color: rgb(255, 255, 255);
-          padding-right: 20px; /* This padding will also be animated with the width */
+          background-color: transparent;
+          color: #4e4e4e;
+          border: 1px solid #bdbdbd;
+          padding-right: 15px; /* This padding will also be animated with the width */
       }
+
       
       .expand-button.expanded .label {
           opacity: 1;

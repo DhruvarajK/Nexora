@@ -47,7 +47,6 @@ async function capacitorRegisterForPush() {
     // registration listener (get device token)
     if (PushNotifications.addListener) {
       PushNotifications.addListener('registration', (token) => {
-        console.log('Device token (capacitor):', token);
         // send token to server
         fetch('/push/subscribe', {
           method: 'POST',
@@ -172,7 +171,7 @@ function connectWs() {
 
   ws.onopen = () => {
     reconnectDelay = 1000;
-    console.log('ws open');
+
   };
 
   // reuse single message handler function for clarity
@@ -225,7 +224,6 @@ function connectWs() {
   ws.onmessage = wsOnMessageHandler;
 
   ws.onclose = (ev) => {
-    console.log('ws closed', ev);
     if (shouldReconnect) scheduleReconnect();
   };
 

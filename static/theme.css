@@ -101,7 +101,11 @@
       background-color: #e7e7e7;
       color: #111827;
     }
-    .expand-button.expanded { background-color: #161616; color: #fff; }
+    .expand-button.expanded {
+      background-color: transparent;
+      color: #4e4e4e;
+      border: 1px solid #bdbdbd;
+  }
   
     #send-btn {
       background: #000000;
