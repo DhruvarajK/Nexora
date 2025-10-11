@@ -99,13 +99,13 @@
   
     .expand-button {
       background-color: transparent;
-      color: #4e4e4e;
-      border: 1.5px solid #dddddd;
+      color: #000000;
+      border: 1.3px solid #ddddddc5;
     }
     .expand-button.expanded {
       background-color: transparent;
-      color: #4e4e4e;
-      border: 1.5px solid #dddddd;
+      color: #000000;
+      border: 1.3px solid #ddddddc5;
   }
   
     #send-btn {
