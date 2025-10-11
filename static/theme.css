@@ -98,8 +98,9 @@
     }
   
     .expand-button {
-      background-color: #e7e7e7;
-      color: #111827;
+      background-color: transparent;
+      color: #4e4e4e;
+      border: 1.5px solid #dddddd;
     }
     .expand-button.expanded {
       background-color: transparent;
