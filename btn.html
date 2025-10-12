@@ -1,205 +1,189 @@
-
-<html>
-    <head><style>
-        /* Basic styles for the container and particles */
-        #CanavaView {
-          position: fixed;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: 100%;
-          pointer-events: none; /* allow clicks through */
-          overflow: hidden;
-          z-index: 0; /* adjust if needed */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Animation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-      
-        .cv-particle {
-          position: absolute;
-          left: 0;
-          top: 0;
-          will-change: transform, opacity, width, height;
-          border-radius: 50%;
-          transform-origin: 50% 50%;
-          /* We'll set size, background and opacity inline for each particle */
+        #welcome {
+            font-size: 24px;
+            color: #333;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Preserves spaces and newlines for typing effect */
         }
-      </style></head>
-      <body>
-        
-        <div id="ParticleContainer" style="position: relative; overflow: hidden; width: 100vw; height: 100vh; background: transparent; filter: blur(14px);"></div>
+        .streaming-cursor {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: rgb(32, 32, 32);
+            border-radius: 12px;
+            margin-left: 2px;
+            animation: cursor-pulse 1s infinite ease-in-out;
+            vertical-align: text-bottom;
+        }
+        @keyframes cursor-pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.9;
+                transform: scale(0.6);
+            }
+        }
+        #restart-btn {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            background: #10a37f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #restart-btn:hover {
+            background: #0f8b68;
+        }
+    </style>
+</head>
+<body>
+    <!-- Example of dynamic rendering: This script adds the div after a delay -->
+    <script>
+        setTimeout(() => {
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.id = 'welcome';
+            document.body.appendChild(welcomeDiv);
+            console.log('Welcome div added dynamically!');
+        }, 2000); // Simulates delay in adding the div
+    </script>
 
-        <script>
-            
-const container = document.getElementById('ParticleContainer');
+    <button id="restart-btn">Restart Streaming</button>
 
-if (!container) throw new Error("Div element with id 'ParticleContainer' not found");
+    <script>
+        // Variable to store user name (replace with actual user input, e.g., from localStorage or API)
+        const userName = "Alex"; // Example: Change this to dynamic value like document.getElementById('username').value;
 
-let particles = [];
-let w = 0, h = 0;
-let speedMultiplier = 15;
-let particleSize = 100;
-let particleOpacity = 0.1;
-let colorHue = 190;
+        // Time-based greeting
+        const now = new Date();
+        const hour = now.getHours();
+        let timeGreeting;
+        if (hour < 12) {
+            timeGreeting = "Good morning";
+        } else if (hour < 17) {
+            timeGreeting = "Good afternoon";
+        } else {
+            timeGreeting = "Good evening";
+        }
 
-let animationId = null;
-let isAnimating = false;
-let resizeTimeout = null;
+        // Array of random welcome messages
+        const welcomeMessages = [
+            "What should we dive into today?",
+            "Hey, nice to see you. What’s new?",
+            "How can I help you today?",
+            "Ready for some adventure?",
+            "What's on your mind?",
+            "Let's make today awesome!",
+            "Excited to chat with you!"
+        ];
 
-function resizeContainer() {
-  w = Math.floor(window.innerWidth);
-  h = Math.floor(window.innerHeight);
-  container.style.width = w + 'px';
-  container.style.height = h + 'px';
-}
+        // Select a random message (can be re-randomized on restart if desired)
+        let randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
 
-function handleResizeDebounced() {
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    init();
-    resizeTimeout = null;
-  }, 120);
-}
+        // Full welcome text
+        let fullText = `${timeGreeting}, ${userName}! ${randomMessage}`;
 
-class Particle {
-  constructor() {
-    this.element = document.createElement('div');
-    this.element.style.position = 'absolute';
-    this.element.style.borderRadius = '50%';
-    this.element.style.pointerEvents = 'none';
-    this.element.style.background = 'transparent';
-    this.element.style.filter = 'blur(0.5px)'; // slight blur for softness
-    container.appendChild(this.element);
-    this.reset();
-  }
+        // Typing animation setup
+        let i = 0;
+        let currentText;
+        let cursor;
+        let isInitialized = false;
+        let typingComplete = false;
 
-  reset() {
-    this.x = Math.random() * w;
-    this.y = Math.random() * h;
-    this.targetSize = particleSize + Math.random() * 100;
-    this.size = this.targetSize;
-    this.baseSpeedX = (Math.random() - 0.5) * 0.5;
-    this.baseSpeedY = (Math.random() - 0.5) * 0.5;
-    this.baseOpacity = particleOpacity;
-    this.hue = colorHue + Math.random() * 15;
-    this.pulseOffset = Math.random() * Math.PI * 2;
-    this.updateStyle();
-  }
+        function initializeAnimation() {
+            const welcomeEl = document.getElementById('welcome');
+            if (!welcomeEl || isInitialized) return;
 
-  updateStyle() {
-    const pulse = Math.sin(this.pulseOffset) * 0.15 + 1;
-    const currentSize = this.size * pulse;
-    const half = currentSize / 2;
-    this.element.style.left = (this.x - half) + 'px';
-    this.element.style.top = (this.y - half) + 'px';
-    this.element.style.width = currentSize * 2 + 'px';
-    this.element.style.height = currentSize * 2 + 'px';
+            // Create persistent text node and cursor
+            currentText = document.createTextNode('');
+            cursor = document.createElement('span');
+            cursor.className = 'streaming-cursor';
+            cursor.style.display = 'inline-block'; // Ensure visible
+            welcomeEl.appendChild(currentText);
+            welcomeEl.appendChild(cursor);
+            isInitialized = true;
+        }
 
-    const grad1 = `hsla(${this.hue},100%,65%,${this.baseOpacity})`;
-    const grad2 = `hsla(${this.hue},100%,60%,${this.baseOpacity * 0.7})`;
-    const grad3 = `hsla(${this.hue},100%,55%,0)`;
-    this.element.style.background = `radial-gradient(circle at center, ${grad1}, ${grad2} 40%, ${grad3} 100%)`;
-  }
+        function typeWriter() {
+            if (!currentText) return; // Ensure initialized
 
-  update() {
-    this.x += this.baseSpeedX * speedMultiplier;
-    this.y += this.baseSpeedY * speedMultiplier;
+            if (i < fullText.length) {
+                currentText.textContent = fullText.slice(0, i);
+                i++;
+                setTimeout(typeWriter, 100); // Typing speed: 100ms per character
+            } else {
+                currentText.textContent = fullText;
+                typingComplete = true;
+                // Hide cursor after 1 second of completion
+                setTimeout(() => {
+                    if (cursor && typingComplete) {
+                        cursor.style.display = 'none';
+                    }
+                }, 1000);
+            }
+        }
 
-    // wrap
-    if (this.x < -this.size) this.x = w + this.size;
-    if (this.x > w + this.size) this.x = -this.size;
-    if (this.y < -this.size) this.y = h + this.size;
-    if (this.y > h + this.size) this.y = -this.size;
+        function restartStreaming() {
+            if (!isInitialized) return; // Wait for init
 
-    // small random walk
-    if (Math.random() < 0.01) {
-      this.baseSpeedX += (Math.random() - 0.5) * 0.1;
-      this.baseSpeedY += (Math.random() - 0.5) * 0.1;
-      this.baseSpeedX = Math.max(-0.8, Math.min(0.8, this.baseSpeedX));
-      this.baseSpeedY = Math.max(-0.8, Math.min(0.8, this.baseSpeedY));
-    }
+            // Reset state
+            i = 0;
+            typingComplete = false;
+            currentText.textContent = '';
+            cursor.style.display = 'inline-block'; // Show cursor again
 
-    this.size += (this.targetSize - this.size) * 0.05;
-    this.pulseOffset += 0.02;
-    this.updateStyle();
-  }
-}
+            // Optionally re-randomize message for variety
+            randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+            fullText = `${timeGreeting}, ${userName}! ${randomMessage}`;
 
-function init() {
-  resizeContainer();
+            // Clear any pending timeouts (basic, but effective for this)
+            typeWriter(); // Start immediately
+        }
 
-  // Clear old particles
-  particles.forEach(p => {
-    if (p.element && p.element.parentNode) {
-      p.element.parentNode.removeChild(p.element);
-    }
-  });
-  particles = [];
+        // Wait for the div to be dynamically added and start animation
+        function waitForElement() {
+            const welcomeEl = document.getElementById('welcome');
+            if (welcomeEl) {
+                initializeAnimation();
+                setTimeout(typeWriter, 500); // Brief pause after init before typing starts
+            } else {
+                setTimeout(waitForElement, 100); // Poll every 100ms
+            }
+        }
 
-  const particleCount = 15;
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-  }
-}
+        // Start waiting on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForElement);
+        } else {
+            waitForElement();
+        }
 
-function animate() {
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    p.update();
-  }
-
-  animationId = requestAnimationFrame(animate);
-}
-
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopAnimation();
-  } else {
-    startAnimation();
-  }
-}
-
-function toggleAnimation() {
-  if (isAnimating) stopAnimation();
-  else startAnimation();
-  return isAnimating;
-}
-
-function startAnimation() {
-  if (isAnimating) return;
-  isAnimating = true;
-  if (!animationId) animationId = requestAnimationFrame(animate);
-}
-
-function stopAnimation() {
-  if (!isAnimating) return;
-  isAnimating = false;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-}
-
-function destroy() {
-  stopAnimation();
-  window.removeEventListener('resize', handleResizeDebounced);
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  particles.forEach(p => {
-    if (p.element && p.element.parentNode) {
-      p.element.parentNode.removeChild(p.element);
-    }
-  });
-  particles = [];
-}
-
-window.addEventListener('resize', handleResizeDebounced, { passive: true });
-document.addEventListener('visibilitychange', handleVisibilityChange);
-
-window.addEventListener('load', () => {
-  init();
-  startAnimation();
-});
-        </script>
-    
-      </body>
+        // Attach restart function to button click (for demo)
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('new-ch-tog');
+            if (btn) {
+                btn.addEventListener('click', restartStreaming);
+            }
+        });
+    </script>
+</body>
 </html>
-

@@ -353,7 +353,9 @@
           display: flex;
           flex-direction: column;
           align-items: center;
-
+          position: relative;
+          bottom: 50%;
+          transition: bottom 0.2s ease;
       }
       #send-btn {
         margin-left: 0;
@@ -1513,13 +1515,15 @@ img.logo {
 
 .nex-head {
   position: absolute;
-  top: 30%;
+  top: 50%;
   display: flex;
   align-items: center;
-  font-size: 53px;
+  font-size: 25px;
   gap: 7px;
-  font-family: monospace;
+  font-family: 'Inter';
   font-weight: 900;
+  justify-content: flex-start;
+  width: 695px;
 }
 
 .nex-head svg {
@@ -1695,8 +1699,18 @@ span.exec-code-label svg {
     background: rgb(32, 32, 32);
     border-radius: 12px;
     margin-left: 2px;
+    margin-bottom: 4px;
     animation: cursor-pulse 1s infinite ease-in-out;
     vertical-align: text-bottom;
+}
+
+#welcome {
+  color: #333;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 20;
+  bottom: 200px;
 }
 
 @keyframes cursor-pulse {

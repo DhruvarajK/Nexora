@@ -165,6 +165,8 @@
     }
     .search-dropdown {
         margin-right: 0 ; 
+        top: auto;
+        bottom: 130px;
     }
 
     .chat-list-title {
@@ -225,7 +227,7 @@
     /* Input area - fixed at bottom */
     #input-area {
         position: fixed;
-        bottom: 0;
+        bottom: 0 !important;
         left: 0;
         right: 0;
         padding: 1rem;

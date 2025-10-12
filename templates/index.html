@@ -49,7 +49,8 @@
         </div>
         
         <div id="chat-box">
-            <canvas id="CanavaView"></canvas>
+            <canvas id="CanavaView">
+            </canvas>
             
             <div class="mob-header">
                 <div><button id="mobhist-btn" ><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" data-rtl-flip="" class="icon-lg text-token-text-secondary"><path style="stroke: currentColor; stroke-width :.8px ;" d="M11.6663 12.6686L11.801 12.6823C12.1038 12.7445 12.3313 13.0125 12.3313 13.3337C12.3311 13.6547 12.1038 13.9229 11.801 13.985L11.6663 13.9987H3.33325C2.96609 13.9987 2.66839 13.7008 2.66821 13.3337C2.66821 12.9664 2.96598 12.6686 3.33325 12.6686H11.6663ZM16.6663 6.00163L16.801 6.0153C17.1038 6.07747 17.3313 6.34546 17.3313 6.66667C17.3313 6.98788 17.1038 7.25586 16.801 7.31803L16.6663 7.33171H3.33325C2.96598 7.33171 2.66821 7.03394 2.66821 6.66667C2.66821 6.2994 2.96598 6.00163 3.33325 6.00163H16.6663Z "></path></svg></button></div>
@@ -364,6 +365,31 @@
         const searchBtn = document.getElementById('search-btn');
         const searchDropdown = document.getElementById('search-dropdown');
         const searchOptions = document.querySelectorAll('.search-option');
+
+        const inputArea = document.getElementById('input-area');
+
+        function setBottomZero() {
+            if (window.innerWidth > 768) { // only apply on desktop
+                inputArea.style.bottom = '0';
+                searchDropdown.style.bottom='118px';
+                searchDropdown.style.top='auto';
+            }
+        }
+
+        function resetBottom() {
+            if (window.innerWidth > 768) { // only apply on desktop
+            inputArea.style.bottom = '50%';
+            searchDropdown.style.bottom='auto';
+            searchDropdown.style.top='140px';
+            }
+        }
+
+        // Optional: auto-adjust when window resizes
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+            inputArea.style.bottom = '0';
+            }
+        });
 
 
         function toggleHistoryPanel() {
@@ -865,7 +891,6 @@
 
 
     function createNewChat() {
-        startAnimation();
         closeHistoryPanel();
         activeChatId = null;
         is_private =null;
@@ -876,6 +901,10 @@
         renderMainChatView();
         renderRecommendations();
         updateSidebarActiveState();
+        resetBottom();
+        resetAnimation();
+        waitForElement();
+        startAnimation();
         scrollToBottomBtn.style.display = 'none';
         updateIncoButtonVisibility();
         
@@ -1265,18 +1294,29 @@
         
         
         
-        function selectChat(chatId) {
+        async function selectChat(chatId) {
+            setBottomZero();
             stopAnimation();
+        
             if (activeChatId === chatId) return;
+        
             activeChatId = chatId;
             updateSidebarActiveState();
-            loadChatHistory(chatId);
+        
+            // Wait a frame to apply bottom=0 before loading chat
+            await new Promise(requestAnimationFrame);
+        
             closeHistoryPanel();
-            if(document.getElementById('inco-btn').classList.contains('expanded')){
+        
+            if (document.getElementById('inco-btn').classList.contains('expanded')) {
                 document.getElementById('inco-btn').classList.remove('expanded');
             }
+        
             updateIncoButtonVisibility();
+        
+            await loadChatHistory(chatId);
         }
+        
         
         async function loadChatHistory(chatId) {
             clearChatView();
@@ -1345,6 +1385,7 @@
             }
         
             if (!currentChatId) {
+                setBottomZero();
                 try {
                     const bodyData = { message: msg };
                     if (document.getElementById('inco-btn').classList.contains('expanded')) {
@@ -2604,7 +2645,7 @@
         const mobileRecommendations = ['help me', 'Analyse docs', 'Unit tests', 'Latest News'];
 
         function renderMainChatView(){
-            chatContainer.innerHTML = `<div class="nex-head"><svg class="transition-all tect-[#c1c1c1] duration-200 active:scale-95 active:opacity-70" width="35" height="35" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 7L10 0H8L2 7V9H7L6 16H8L14 9L14 7H9Z" fill="currentColor"></path></svg><span>Nexora</span></div>`
+            chatContainer.innerHTML = `<div class="nex-head"><div id="welcome"></div></div>`
         }
 
         function renderRecommendations() {
@@ -3471,283 +3512,374 @@ async function exportToPDF(bubble, text) {
           // If you need to open programmatically: window.CustomImageLightbox.open(url);
         });
         </script>
-
+        <script>
+            const canvas = document.getElementById('CanavaView');
+        if (!canvas) throw new Error("Canvas element with id 'CanavaView' not found");
+        const ctx = canvas.getContext('2d');
+        
+        // =======================================
+        // CONFIGURABLE VALUES
+        // =======================================
+        let particles = [];
+        let w = 0, h = 0;
+        let speedMultiplier = 10;
+        let particleSize = 130;
+        let particleOpacity = 0.1;
+        let colorHue = 190;
+        
+        
+        let particleSpreadPercent = 50;
+        
+        let animationId = null;
+        let isAnimating = false;
+        let resizeTimeout = null;
+        
+        // sprite cache to avoid creating gradients every frame
+        const spriteCache = new Map();
+        
+        // Utility: create a pre-rendered circular gradient sprite
+        function createSprite(size, hue, baseOpacity) {
+          // round keys so cache isn't too big; round size to nearest 2 for finer granularity without explosion
+          const key = `${Math.round(size / 2) * 2}|${Math.round(hue)}|${+baseOpacity.toFixed(2)}`;
+          if (spriteCache.has(key)) return spriteCache.get(key);
+        
+          const s = Math.ceil(size * 2 * devicePixelRatio);
+          const off = document.createElement('canvas');
+          off.width = off.height = s;
+          const octx = off.getContext('2d');
+        
+          // scale to handle DPR
+          octx.scale(devicePixelRatio, devicePixelRatio);
+        
+          const center = size;
+          const grad = octx.createRadialGradient(center, center, 0, center, center, size);
+          grad.addColorStop(0, `hsla(${hue},100%,65%,${baseOpacity})`);
+          grad.addColorStop(0.4, `hsla(${hue},100%,60%,${baseOpacity * 0.7})`);
+          grad.addColorStop(1, `hsla(${hue},100%,55%,0)`);
+        
+          octx.fillStyle = grad;
+          octx.beginPath();
+          octx.arc(center, center, size, 0, Math.PI * 2);
+          octx.fill();
+        
+          spriteCache.set(key, off);
+          // keep cache size bounded
+          if (spriteCache.size > 300) { // slightly higher limit for pulsing particles
+            // remove oldest entry
+            const k = spriteCache.keys().next().value;
+            spriteCache.delete(k);
+          }
+        
+          return off;
+        }
+        
+        function resizeCanvas() {
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          w = Math.floor(window.innerWidth);
+          h = Math.floor(window.innerHeight);
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale drawing to CSS pixels
+        }
+        
+        // Debounced init on resize
+        function handleResizeDebounced() {
+          if (resizeTimeout) clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            init();
+            resizeTimeout = null;
+          }, 120);
+        }
+        
+        // Helper: compute vertical band for particles based on particleSpreadPercent
+        function computeVerticalBand() {
+          // clamp percent 0..100
+          const pct = Math.max(0, Math.min(100, particleSpreadPercent));
+          const spreadHeight = (h * pct) / 100;
+          const maxY = h; // bottom
+          const minY = h - spreadHeight; // top of the band
+          return { minY, maxY, spreadHeight };
+        }
+        
+        class Particle {
+          constructor() {
+            this.reset();
+          }
+        
+          reset() {
+            // place within vertical band
+            const band = computeVerticalBand();
+            const minY = band.minY;
+            const spread = Math.max(0, band.spreadHeight);
+        
+            this.x = Math.random() * w;
+            // if spread is zero, minY === maxY === h, so y becomes h
+            this.y = minY + (spread > 0 ? Math.random() * spread : 0);
+        
+            this.targetSize = particleSize + Math.random() * 100;
+            this.size = this.targetSize;
+            this.baseSpeedX = (Math.random() - 0.5) * 0.5;
+            this.baseSpeedY = (Math.random() - 0.5) * 0.5;
+            this.baseOpacity = particleOpacity;
+            this.hue = colorHue + Math.random() * 15;
+            this.pulseOffset = Math.random() * Math.PI * 2;
+          }
+        
+          update() {
+            this.x += this.baseSpeedX * speedMultiplier;
+            this.y += this.baseSpeedY * speedMultiplier;
+        
+            const band = computeVerticalBand();
+            const minY = band.minY;
+            const maxY = band.maxY;
+        
+            // horizontal wrap (full width)
+            if (this.x < -this.size) this.x = w + this.size;
+            if (this.x > w + this.size) this.x = -this.size;
+        
+            // vertical wrap constrained to band
+            if (this.y < minY - this.size) this.y = maxY + this.size;
+            if (this.y > maxY + this.size) this.y = minY - this.size;
+        
+            // small random walk (reduced probability slightly for minor perf gain)
+            if (Math.random() < 0.005) {
+              this.baseSpeedX += (Math.random() - 0.5) * 0.1;
+              this.baseSpeedY += (Math.random() - 0.5) * 0.1;
+              this.baseSpeedX = Math.max(-0.8, Math.min(0.8, this.baseSpeedX));
+              this.baseSpeedY = Math.max(-0.8, Math.min(0.8, this.baseSpeedY));
+            }
+        
+            this.size += (this.targetSize - this.size) * 0.05;
+            this.pulseOffset += 0.02;
+          }
+        
+          draw() {
+            const pulse = Math.sin(this.pulseOffset) * 0.15 + 1;
+            const currentSize = this.size * pulse;
+            const sprite = createSprite(currentSize, this.hue, this.baseOpacity);
+            // drawImage handles the alpha and scaling; sprite is DPR-aware already
+            ctx.drawImage(
+              sprite,
+              this.x - currentSize,
+              this.y - currentSize,
+              currentSize * 2,
+              currentSize * 2
+            );
+          }
+        }
+        
+        function init() {
+          resizeCanvas();
+          // optionally clear sprite cache if canvas size changed drastically
+          // spriteCache.clear();
+        
+          const particleCount = 15; // keep same count; you can reduce for performance
+          particles.length = 0;
+          for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+          }
+        }
+        
+        function animate() {
+          // one loop tick
+          ctx.clearRect(0, 0, w, h);
+        
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.update();
+            p.draw();
+          }
+        
+          animationId = requestAnimationFrame(animate);
+        }
+        
+        // visibility handler: pause when hidden, but do not auto-resume
+        function handleVisibilityChange() {
+          if (document.hidden) {
+            stopAnimation();
+          }
+          // else: do nothing - no auto-start on visibility
+        }
+        
+        // Toggle function
+        function toggleAnimation() {
+          if (isAnimating) stopAnimation();
+          else startAnimation();
+          return isAnimating;
+        }
+        
+        function startAnimation() {
+          if (isAnimating) return;
+          isAnimating = true;
+        
+          // ensure canvas visible when starting
+          canvas.style.display = 'block';
+        
+          if (!animationId) animationId = requestAnimationFrame(animate);
+        }
+        
+        function stopAnimation() {
+          if (!isAnimating) return;
+          isAnimating = false;
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+        
+          // hide canvas when stopped
+          canvas.style.display = 'none';
+        }
+        
+        // Public setter to adjust percentage at runtime
+        function setParticleSpreadPercent(p) {
+          // clamp input
+          const pClamped = Math.max(0, Math.min(100, p));
+          particleSpreadPercent = pClamped;
+        
+          // reposition or clamp existing particles so they remain in-band
+          const band = computeVerticalBand();
+          const minY = band.minY;
+          const maxY = band.maxY;
+          const spread = Math.max(0, band.spreadHeight);
+        
+          for (let i = 0; i < particles.length; i++) {
+            const part = particles[i];
+            // if spread is zero, put them exactly at bottom
+            if (spread === 0) {
+              part.y = maxY;
+            } else {
+              // clamp to band; if outside, nudge inside randomly within band
+              if (part.y < minY || part.y > maxY) {
+                part.y = minY + Math.random() * spread;
+              }
+            }
+          }
+        }
+        
+        // Attach listeners once (but start animation only on load)
+        window.addEventListener('resize', handleResizeDebounced, { passive: true });
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        
+        // Clean up helper in case you remove this component
+        function destroy() {
+          stopAnimation();
+          window.removeEventListener('resize', handleResizeDebounced);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          if (resizeTimeout) clearTimeout(resizeTimeout);
+          particles = [];
+          spriteCache.clear();
+        }
+        
+        // Start only after full page load (resources/images/fonts done)
+        window.addEventListener('load', () => {
+          init();
+          startAnimation();
+        });
+        
+        // --- exports for console convenience (optional) ---
+        window.setParticleSpreadPercent = setParticleSpreadPercent;
+        window.toggleParticleAnimation = toggleAnimation;
+        window.destroyParticleAnimation = destroy;
+        
+        </script>
 <script>
-    const canvas = document.getElementById('CanavaView');
-if (!canvas) throw new Error("Canvas element with id 'CanavaView' not found");
-const ctx = canvas.getContext('2d');
+        const userName = "{{ current_user.username }}"; 
 
-// =======================================
-// CONFIGURABLE VALUES
-// =======================================
-let particles = [];
-let w = 0, h = 0;
-let speedMultiplier = 10;
-let particleSize = 130;
-let particleOpacity = 0.1;
-let colorHue = 190;
+        // Time-based greeting
+        const now = new Date();
+        const hour = now.getHours();
+        let timeGreeting;
+        if (hour < 12) {
+            timeGreeting = "Good morning";
+        } else if (hour < 17) {
+            timeGreeting = "Good afternoon";
+        } else {
+            timeGreeting = "Good evening";
+        }
 
+        // Array of random welcome messages
+        const welcomeMessages = [
+            "What should we dive into today?",
+            "Hey, nice to see you. What’s new?",
+            "How can I help you today?",
+            "Ready for some adventure?",
+            "What's on your mind?",
+            "Let's make today awesome!",
+            "Excited to chat with you!"
+        ];
 
-let particleSpreadPercent = 50;
+        // Select a random message
+        const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
 
-let animationId = null;
-let isAnimating = false;
-let resizeTimeout = null;
+        // Full welcome text
+        const fullText = `${timeGreeting}, ${userName}! ${randomMessage}`;
 
-// sprite cache to avoid creating gradients every frame
-const spriteCache = new Map();
+        // Typing animation setup
+        let i = 0;
+        let currentText;
+        let cursor;
+        let isInitialized = false;
 
-// Utility: create a pre-rendered circular gradient sprite
-function createSprite(size, hue, baseOpacity) {
-  // round keys so cache isn't too big
-  const key = `${Math.round(size)}|${Math.round(hue)}|${+baseOpacity.toFixed(2)}`;
-  if (spriteCache.has(key)) return spriteCache.get(key);
+        function initializeAnimation() {
+            const welcomeEl = document.getElementById('welcome');
+            if (!welcomeEl || isInitialized) return;
 
-  const s = Math.ceil(size * 2 * devicePixelRatio);
-  const off = document.createElement('canvas');
-  off.width = off.height = s;
-  const octx = off.getContext('2d');
+            // Create persistent text node and cursor
+            currentText = document.createTextNode('');
+            cursor = document.createElement('span');
+            cursor.className = 'streaming-cursor';
+            welcomeEl.appendChild(currentText);
+            welcomeEl.appendChild(cursor);
+            isInitialized = true;
+        }
 
-  // scale to handle DPR
-  octx.scale(devicePixelRatio, devicePixelRatio);
+        function typeWriter() {
+            if (!currentText) return; // Ensure initialized
 
-  const center = size;
-  const grad = octx.createRadialGradient(center, center, 0, center, center, size);
-  grad.addColorStop(0, `hsla(${hue},100%,65%,${baseOpacity})`);
-  grad.addColorStop(0.4, `hsla(${hue},100%,60%,${baseOpacity * 0.7})`);
-  grad.addColorStop(1, `hsla(${hue},100%,55%,0)`);
+            if (i < fullText.length) {
+                currentText.textContent = fullText.slice(0, i);
+                i++;
+                setTimeout(typeWriter, 10); // Typing speed: 100ms per character
+            } else {
+                currentText.textContent = fullText;
+                // Hide cursor after 1 second of completion
+                setTimeout(() => {
+                    if (cursor) cursor.style.display = 'none';
+                }, 1);
+            }
+        }
 
-  octx.fillStyle = grad;
-  octx.beginPath();
-  octx.arc(center, center, size, 0, Math.PI * 2);
-  octx.fill();
+        // Wait for the div to be dynamically added and start animation
+        function waitForElement() {
+            const welcomeEl = document.getElementById('welcome');
+            if (welcomeEl) {
+                initializeAnimation();
+                setTimeout(typeWriter, 500); // Brief pause after init before typing starts
+            } else {
+                setTimeout(waitForElement, 100); // Poll every 100ms
+            }
+        }
 
-  spriteCache.set(key, off);
-  // keep cache size bounded
-  if (spriteCache.size > 200) { // arbitrary limit
-    // remove first entry
-    const k = spriteCache.keys().next().value;
-    spriteCache.delete(k);
-  }
+        function resetAnimation() {
+            i = 0;
+            isInitialized = false;
+            const welcomeEl = document.getElementById('welcome');
+            if (welcomeEl) {
+                welcomeEl.innerHTML = ''; // Clear previous content
+            }
+            currentText = null;
+            cursor = null;
+        }
 
-  return off;
-}
-
-function resizeCanvas() {
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  w = Math.floor(window.innerWidth);
-  h = Math.floor(window.innerHeight);
-  canvas.width = Math.floor(w * dpr);
-  canvas.height = Math.floor(h * dpr);
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // scale drawing to CSS pixels
-}
-
-// Debounced init on resize
-function handleResizeDebounced() {
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    init();
-    resizeTimeout = null;
-  }, 120);
-}
-
-// Helper: compute vertical band for particles based on particleSpreadPercent
-function computeVerticalBand() {
-  // clamp percent 0..100
-  const pct = Math.max(0, Math.min(100, particleSpreadPercent));
-  const spreadHeight = (h * pct) / 100;
-  const maxY = h; // bottom
-  const minY = h - spreadHeight; // top of the band
-  return { minY, maxY, spreadHeight };
-}
-
-class Particle {
-  constructor() {
-    this.reset();
-  }
-
-  reset() {
-    // place within vertical band
-    const band = computeVerticalBand();
-    const minY = band.minY;
-    const spread = Math.max(0, band.spreadHeight);
-
-    this.x = Math.random() * w;
-    // if spread is zero, minY === maxY === h, so y becomes h
-    this.y = minY + (spread > 0 ? Math.random() * spread : 0);
-
-    this.targetSize = particleSize + Math.random() * 100;
-    this.size = this.targetSize;
-    this.baseSpeedX = (Math.random() - 0.5) * 0.5;
-    this.baseSpeedY = (Math.random() - 0.5) * 0.5;
-    this.baseOpacity = particleOpacity;
-    this.hue = colorHue + Math.random() * 15;
-    this.pulseOffset = Math.random() * Math.PI * 2;
-  }
-
-  update() {
-    this.x += this.baseSpeedX * speedMultiplier;
-    this.y += this.baseSpeedY * speedMultiplier;
-
-    const band = computeVerticalBand();
-    const minY = band.minY;
-    const maxY = band.maxY;
-
-    // horizontal wrap (full width)
-    if (this.x < -this.size) this.x = w + this.size;
-    if (this.x > w + this.size) this.x = -this.size;
-
-    // vertical wrap constrained to band
-    if (this.y < minY - this.size) this.y = maxY + this.size;
-    if (this.y > maxY + this.size) this.y = minY - this.size;
-
-    // small random walk
-    if (Math.random() < 0.01) {
-      this.baseSpeedX += (Math.random() - 0.5) * 0.1;
-      this.baseSpeedY += (Math.random() - 0.5) * 0.1;
-      this.baseSpeedX = Math.max(-0.8, Math.min(0.8, this.baseSpeedX));
-      this.baseSpeedY = Math.max(-0.8, Math.min(0.8, this.baseSpeedY));
-    }
-
-    this.size += (this.targetSize - this.size) * 0.05;
-    this.pulseOffset += 0.02;
-  }
-
-  draw() {
-    const pulse = Math.sin(this.pulseOffset) * 0.15 + 1;
-    const currentSize = this.size * pulse;
-    const sprite = createSprite(currentSize, this.hue, this.baseOpacity);
-    // drawImage handles the alpha and scaling; sprite is DPR-aware already
-    ctx.drawImage(
-      sprite,
-      this.x - currentSize,
-      this.y - currentSize,
-      currentSize * 2,
-      currentSize * 2
-    );
-  }
-}
-
-function init() {
-  resizeCanvas();
-  // optionally clear sprite cache if canvas size changed drastically
-  // spriteCache.clear();
-
-  const particleCount = 15; // keep same count; you can reduce for performance
-  particles.length = 0;
-  for (let i = 0; i < particleCount; i++) {
-    particles.push(new Particle());
-  }
-}
-
-function animate() {
-  // one loop tick
-  ctx.clearRect(0, 0, w, h);
-
-  for (let i = 0; i < particles.length; i++) {
-    const p = particles[i];
-    p.update();
-    p.draw();
-  }
-
-  animationId = requestAnimationFrame(animate);
-}
-
-// visibility handler: pause when hidden
-function handleVisibilityChange() {
-  if (document.hidden) {
-    stopAnimation();
-  } else {
-    startAnimation();
-  }
-}
-
-// Toggle function
-function toggleAnimation() {
-  if (isAnimating) stopAnimation();
-  else startAnimation();
-  return isAnimating;
-}
-
-function startAnimation() {
-  if (isAnimating) return;
-  isAnimating = true;
-
-  // ensure canvas visible when starting
-  canvas.style.display = 'block';
-
-  if (!animationId) animationId = requestAnimationFrame(animate);
-}
-
-function stopAnimation() {
-  if (!isAnimating) return;
-  isAnimating = false;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-
-  // hide canvas when stopped
-  canvas.style.display = 'none';
-}
-
-// Public setter to adjust percentage at runtime
-function setParticleSpreadPercent(p) {
-  // clamp input
-  const pClamped = Math.max(0, Math.min(100, p));
-  particleSpreadPercent = pClamped;
-
-  // reposition or clamp existing particles so they remain in-band
-  const band = computeVerticalBand();
-  const minY = band.minY;
-  const maxY = band.maxY;
-  const spread = Math.max(0, band.spreadHeight);
-
-  for (let i = 0; i < particles.length; i++) {
-    const part = particles[i];
-    // if spread is zero, put them exactly at bottom
-    if (spread === 0) {
-      part.y = maxY;
-    } else {
-      // clamp to band; if outside, nudge inside randomly within band
-      if (part.y < minY || part.y > maxY) {
-        part.y = minY + Math.random() * spread;
-      }
-    }
-  }
-}
-
-// Attach listeners once (but start animation only on load)
-window.addEventListener('resize', handleResizeDebounced, { passive: true });
-document.addEventListener('visibilitychange', handleVisibilityChange);
-
-// Clean up helper in case you remove this component
-function destroy() {
-  stopAnimation();
-  window.removeEventListener('resize', handleResizeDebounced);
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  particles = [];
-  spriteCache.clear();
-}
-
-// Start only after full page load (resources/images/fonts done)
-window.addEventListener('load', () => {
-  init();
-  startAnimation();
-});
-
-// --- exports for console convenience (optional) ---
-window.setParticleSpreadPercent = setParticleSpreadPercent;
-window.toggleParticleAnimation = toggleAnimation;
-window.destroyParticleAnimation = destroy;
-
-            
-</script>
-
-
+        // Start waiting on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForElement);
+        } else {
+            waitForElement();
+        }
+    </script>
         
 <script defer src="/static/search-panel.js"></script>
 <script defer src="/static/internet.js"></script>
