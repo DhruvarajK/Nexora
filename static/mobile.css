@@ -7,10 +7,11 @@
         overflow-x: hidden;
     }
 
-
-    .nex-head span {
-      display: none;
+    #welcome {
+      bottom: 50px;
   }
+
+
 
     
 .scroll-box {
@@ -699,7 +700,7 @@
 
 
     .nex-head {
-        font-size: 2rem;
+        font-size: 20px;
     }
 
     .modal-content {

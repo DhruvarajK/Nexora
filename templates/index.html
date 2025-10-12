@@ -393,6 +393,7 @@
 
 
         function toggleHistoryPanel() {
+            stopAnimation();
             try {
                 if (!historyPanel) {
                     throw new Error('History panel element not found');
@@ -872,6 +873,7 @@
 
 
     function closeHistoryPanel() {
+        
         const mobileToggleBtn = document.querySelector('.mobile-history-toggle');
         
         if (mobileToggleBtn && window.innerWidth <= 768) {
@@ -3784,102 +3786,110 @@ async function exportToPDF(bubble, text) {
         window.destroyParticleAnimation = destroy;
         
         </script>
-<script>
-        const userName = "{{ current_user.username }}"; 
-
-        // Time-based greeting
-        const now = new Date();
-        const hour = now.getHours();
-        let timeGreeting;
-        if (hour < 12) {
-            timeGreeting = "Good morning";
-        } else if (hour < 17) {
-            timeGreeting = "Good afternoon";
-        } else {
-            timeGreeting = "Good evening";
-        }
-
-        // Array of random welcome messages
-        const welcomeMessages = [
-            "What should we dive into today?",
-            "Hey, nice to see you. What’s new?",
-            "How can I help you today?",
-            "Ready for some adventure?",
-            "What's on your mind?",
-            "Let's make today awesome!",
-            "Excited to chat with you!"
-        ];
-
-        // Select a random message
-        const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-
-        // Full welcome text
-        const fullText = `${timeGreeting}, ${userName}! ${randomMessage}`;
-
-        // Typing animation setup
-        let i = 0;
-        let currentText;
-        let cursor;
-        let isInitialized = false;
-
-        function initializeAnimation() {
-            const welcomeEl = document.getElementById('welcome');
-            if (!welcomeEl || isInitialized) return;
-
-            // Create persistent text node and cursor
-            currentText = document.createTextNode('');
-            cursor = document.createElement('span');
-            cursor.className = 'streaming-cursor';
-            welcomeEl.appendChild(currentText);
-            welcomeEl.appendChild(cursor);
-            isInitialized = true;
-        }
-
-        function typeWriter() {
-            if (!currentText) return; // Ensure initialized
-
-            if (i < fullText.length) {
-                currentText.textContent = fullText.slice(0, i);
-                i++;
-                setTimeout(typeWriter, 10); // Typing speed: 100ms per character
+        <script>
+            const userName = "{{ current_user.username }}"; 
+        
+            // Time-based greeting
+            const now = new Date();
+            const hour = now.getHours();
+            let timeGreeting;
+            if (hour < 12) {
+                timeGreeting = "Good morning";
+            } else if (hour < 17) {
+                timeGreeting = "Good afternoon";
             } else {
-                currentText.textContent = fullText;
-                // Hide cursor after 1 second of completion
-                setTimeout(() => {
-                    if (cursor) cursor.style.display = 'none';
-                }, 1);
+                timeGreeting = "Good evening";
             }
-        }
-
-        // Wait for the div to be dynamically added and start animation
-        function waitForElement() {
-            const welcomeEl = document.getElementById('welcome');
-            if (welcomeEl) {
-                initializeAnimation();
-                setTimeout(typeWriter, 500); // Brief pause after init before typing starts
+        
+            // Define welcome messages
+            const desktopMessages = [
+                "What should we dive into today?",
+                "Hey, nice to see you. What’s new?",
+                "How can I help you today?",
+                "Ready for some adventure?",
+                "What's on your mind?",
+                "Let's make today awesome!",
+                "Excited to chat with you!"
+            ];
+        
+            const mobileMessages = [
+                "What’s up?",
+                "Hi there!",
+                "Ready?",
+                "Let's go!",
+                "How’s it going?",
+                "Hey!",
+                "Yo!"
+            ];
+        
+            // Choose message set based on screen width
+            const isMobile = window.innerWidth <= 600;
+            const welcomeMessages = isMobile ? mobileMessages : desktopMessages;
+        
+            // Select a random message
+            const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+        
+            // Full welcome text
+            const fullText = `${timeGreeting}, ${userName}! ${randomMessage}`;
+        
+            // Typing animation setup
+            let i = 0;
+            let currentText;
+            let cursor;
+            let isInitialized = false;
+        
+            function initializeAnimation() {
+                const welcomeEl = document.getElementById('welcome');
+                if (!welcomeEl || isInitialized) return;
+        
+                currentText = document.createTextNode('');
+                cursor = document.createElement('span');
+                cursor.className = 'streaming-cursor';
+                welcomeEl.appendChild(currentText);
+                welcomeEl.appendChild(cursor);
+                isInitialized = true;
+            }
+        
+            function typeWriter() {
+                if (!currentText) return;
+        
+                if (i < fullText.length) {
+                    currentText.textContent = fullText.slice(0, i);
+                    i++;
+                    setTimeout(typeWriter, 20); // Faster typing for mobile responsiveness
+                } else {
+                    currentText.textContent = fullText;
+                    setTimeout(() => {
+                        if (cursor) cursor.style.display = 'none';
+                    }, 800);
+                }
+            }
+        
+            function waitForElement() {
+                const welcomeEl = document.getElementById('welcome');
+                if (welcomeEl) {
+                    initializeAnimation();
+                    setTimeout(typeWriter, 300);
+                } else {
+                    setTimeout(waitForElement, 100);
+                }
+            }
+        
+            function resetAnimation() {
+                i = 0;
+                isInitialized = false;
+                const welcomeEl = document.getElementById('welcome');
+                if (welcomeEl) welcomeEl.innerHTML = '';
+                currentText = null;
+                cursor = null;
+            }
+        
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', waitForElement);
             } else {
-                setTimeout(waitForElement, 100); // Poll every 100ms
+                waitForElement();
             }
-        }
-
-        function resetAnimation() {
-            i = 0;
-            isInitialized = false;
-            const welcomeEl = document.getElementById('welcome');
-            if (welcomeEl) {
-                welcomeEl.innerHTML = ''; // Clear previous content
-            }
-            currentText = null;
-            cursor = null;
-        }
-
-        // Start waiting on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', waitForElement);
-        } else {
-            waitForElement();
-        }
-    </script>
+        </script>
         
 <script defer src="/static/search-panel.js"></script>
 <script defer src="/static/internet.js"></script>

@@ -434,9 +434,8 @@ padding-left: 0.5em;
 
 .search-dropdown {
     position: absolute;
-    bottom: 118px;
-    /* left: 170px; */
-    /* transform: translateX(50%); */
+    bottom: auto;
+    top:140px;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 24px;
