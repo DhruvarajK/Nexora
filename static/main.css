@@ -384,6 +384,11 @@
     padding: 12px 16px;
     scroll-snap-align: start;
   }
+  .rec-block:hover {
+    background: inherit;
+    transform: translateY(0);
+    box-shadow: none;
+  }
   
   .rec-text {
     font-size: 13px;
