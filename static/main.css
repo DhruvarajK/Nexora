@@ -371,7 +371,7 @@
     flex-direction: row;
     flex-wrap: nowrap;
     top: auto;
-    margin-left: 10px;
+    margin-left: 2px;
 }
   
   #rec-container::-webkit-scrollbar {
