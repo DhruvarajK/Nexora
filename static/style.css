@@ -524,7 +524,7 @@ padding-left: 0.5em;
 .option-icon svg {
     width: 24px;
     height: 24px;
-    color: inherit;
+    color: rgb(19, 19, 19);
 }
 .option-content {
     flex: 1;

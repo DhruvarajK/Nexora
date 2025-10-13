@@ -332,8 +332,8 @@
 }
 
 .rec-block:active {
-  background: #424242;
-  transform: translateY(0);
+  background: #1c1c1c;
+  transform: none;
 }
 
 .rec-icon {
@@ -2201,6 +2201,7 @@ ease;
     overflow-y: hidden;
     position: relative;
     backdrop-filter: blur(10px);
+    font-size: 17px;
 }
 
 /* Light Theme - Math Block */
@@ -2525,7 +2526,7 @@ ease;
     .math-block {
         padding: 1em;
         margin: 1em 0;
-        font-size: 0.95em;
+        font-size: 16px;
     }
     
     .katex {
@@ -2537,7 +2538,7 @@ ease;
     .math-block {
         padding: 0.8em;
         margin: 0.8em 0;
-        font-size: 0.9em;
+        font-size: 16px;
     }
     
     .math-inline {

@@ -14,6 +14,11 @@
       color: #111827;
 
   }
+  .option-icon svg {
+    width: 24px;
+    height: 24px;
+    color: rgb(19, 19, 19);
+  }
   
     header {
       background: #ffffff;
@@ -302,7 +307,11 @@
   .search-header { border-bottom-color: #eee; }
   .search-option { color: #111827; }
   .search-option:hover { background: #f5f5f6; }
-  .search-option.selected { background: #eef2ff; color: #0f172a; }
+  .search-option.selected {
+    background: #d3d3d321;
+    color: #000000;
+    border: 1px solid #dbdbdb;
+}
 
   /* Upload preview / items */
   #upload-preview-container { background: transparent; border-bottom-color: #eaeaea; }
@@ -717,7 +726,11 @@
       .search-header { border-bottom-color: rgba(255,255,255,0.03); }
       .search-option { color: #e9e9e9; }
       .search-option:hover { background: rgba(255,255,255,0.02); }
-      .search-option.selected { background: rgba(96,165,250,0.06); color: #e6f4ff; }
+      .search-option.selected {
+        background: rgb(179 179 179 / 8%);
+        color: #ffffff;
+        border: 1px solid #4b4b4b;
+    }
     
       /* Upload preview / items */
       #upload-preview-container { background: transparent; border-bottom-color: rgba(255,255,255,0.03); }
@@ -820,6 +833,12 @@ button#mobhist-btn{
   box-shadow: 0px 0px 10px rgb(0 0 0);
 }
 
+.option-icon svg {
+  width: 24px;
+  height: 24px;
+  color: rgb(255, 255, 255);
+}
+
 @media (max-width: 768px) {
 .upper-tools {
   border-bottom: 1px solid #1c1c1c78;
@@ -833,6 +852,8 @@ button#mobhist-btn{
   border: 1px solid #2d2d2d;
   background: #0c0c0c;
 }
+
+
 
   }
   
