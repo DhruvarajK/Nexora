@@ -327,30 +327,38 @@ async def home(request: Request):
     return templates.TemplateResponse("agents.html", {"request": request, "current_user": user})
 
 
+NEX_REGISTER_TOKEN = os.environ.get("NEX_REGISTER_TOKEN", "auf-12345")
+
 @app.post("/register")
 async def register_post(
     request: Request,
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    date_of_birth: str = Form(None)  # expected YYYY-MM-DD or blank
+    date_of_birth: str = Form(None), 
+    nex_token: str = Form(...)        
 ):
     email_norm = email.strip().lower()
+    # token validation: exact match
+    if not nex_token or nex_token.strip() != NEX_REGISTER_TOKEN:
+        # preserve submitted fields so template can re-fill them
+        form_values = {"username": username, "email": email, "date_of_birth": date_of_birth, "nex_token": nex_token}
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid registration token. Contact the administrator.", "form": form_values})
+
     if not EMAIL_RE.match(email_norm):
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Invalid email.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth}})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid email.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth, "nex_token": nex_token}})
     if len(password) < 6:
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Password must be at least 6 characters.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth}})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Password must be at least 6 characters.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth, "nex_token": nex_token}})
     if get_user_by_email(email_norm):
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Email already registered.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth}})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Email already registered.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth, "nex_token": nex_token}})
     try:
         user_id = create_user(username.strip(), email_norm, password, date_of_birth)
     except Exception as e:
         logger.exception("Error creating user")
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Internal error creating user.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth}})
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Internal error creating user.", "form": {"username": username, "email": email, "date_of_birth": date_of_birth, "nex_token": nex_token}})
     # set session and redirect to home
     request.session["user_id"] = user_id
     return RedirectResponse(url="/", status_code=302)
-
 # ---------- Login ----------
 @app.get("/login")
 async def login_get(request: Request):
