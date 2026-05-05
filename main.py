@@ -58,14 +58,15 @@ class CodeSnippet(BaseModel):
     filename: str
     code: str
     
-api_keys = [os.getenv(f"key{i}") for i in range(1, 5) if os.getenv(f"key{i}")]
-clients = [OpenAI( base_url="https://openrouter.ai/api/v1",api_key=key ) for key in api_keys]
-client_index = 0
+sarvam_key = os.getenv("SARVAM_KEY")
+sarvam_client = OpenAI(
+    base_url="https://api.sarvam.ai/v1",
+    api_key=sarvam_key,
+    default_headers={"API-Subscription-Key": sarvam_key}
+)
+
 def get_next_client():
-    global client_index
-    client = clients[client_index]
-    client_index = (client_index + 1) % len(clients)
-    return client
+    return sarvam_client
 
 
 hf_keys = [os.getenv(f"hf_key{i}") for i in range(1, 5) if os.getenv(f"hf_key{i}")]
@@ -710,6 +711,8 @@ async def chat_stream(req: ChatRequest):
         )
 
         for chunk in resp_stream:
+            if not chunk.choices:
+                continue
             delta = chunk.choices[0].delta.content or ""
             if delta:
                 bot_buffer += delta
@@ -789,6 +792,8 @@ async def chat_stream_exec(req: ChatRequest):
 
 
         for chunk in resp_stream:
+            if not chunk.choices:
+                continue
             delta = chunk.choices[0].delta.content or ""
             if delta:
                 bot_buffer += delta

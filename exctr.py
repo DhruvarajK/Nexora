@@ -13,18 +13,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = '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'
+API_KEY = os.getenv("SARVAM_KEY")
 if not API_KEY:
-    print("[ERROR] Please set your OPENAI_API_KEY environment variable before running.")
+    print("[ERROR] Please set your SARVAM_KEY environment variable before running.")
     sys.exit(1)
 
 client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
+    base_url="https://api.sarvam.ai/v1",
     api_key=API_KEY,
+    default_headers={"API-Subscription-Key": API_KEY}
 )
 
-# MODEL_NAME = "qwen/qwen-2.5-coder-32b-instruct:free"
-MODEL_NAME = "qwen/qwen-2.5-72b-instruct:free"
+MODEL_NAME = "sarvam-105b"
 
 OUTPUT_DIR = Path("./outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)

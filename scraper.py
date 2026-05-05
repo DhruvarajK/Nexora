@@ -195,7 +195,11 @@ def get_content_from_links(links, limit_chars=LINK_CHAR_LIMIT):
     print("Scraping complete.")
     return scraped_data
 
-def create_openai_client(api_key, base_url="https://openrouter.ai/api/v1"):
-    return OpenAI(base_url=base_url, api_key=api_key)
+def create_openai_client(api_key, base_url="https://api.sarvam.ai/v1"):
+    return OpenAI(
+        base_url=base_url, 
+        api_key=api_key,
+        default_headers={"API-Subscription-Key": api_key}
+    )
 
 
