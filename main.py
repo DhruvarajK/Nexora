@@ -69,11 +69,14 @@ def get_next_client():
     return sarvam_client
 
 
+
 hf_keys = [os.getenv(f"hf_key{i}") for i in range(1, 5) if os.getenv(f"hf_key{i}")]
 HF_clients = [ InferenceClient(provider="hf-inference", api_key=key) for key in hf_keys ]
 hf_client_index = 0
 
 def get_next_hf_client():
+    if not HF_clients:
+        return None
     global hf_client_index
     client = HF_clients[hf_client_index]
     hf_client_index = (hf_client_index + 1) % len(HF_clients)
@@ -531,6 +534,9 @@ def generate_and_upload_sync(prompt: str, user_id: int, model: str = IMAGE_MODEL
     print("generate_and_upload_sync: called, user_id type:", type(user_id), "value:", user_id)
 
     # 1) Generate image using huggingface InferenceClient
+    if not hf_client:
+        print("generate_and_upload_sync: No HF client available.")
+        return ""
     try:
         result = hf_client.text_to_image(prompt, model=model)
     except Exception as e:
@@ -696,12 +702,16 @@ async def chat_stream(req: ChatRequest):
             {"role": "system", "content": memories},
         ]
         for exchange in history:
-            messages.append({"role": "user", "content": parse_message_with_images(exchange["user_text"])})
+            user_content = exchange["user_text"]
+            # If the content contains image tags, we strip them because Sarvam only supports strings
+            user_content = re.sub(r"<up-img>.*?</up-img>", "", user_content).strip()
+            messages.append({"role": "user", "content": user_content})
             cleaned = strip_first_think_block(exchange["bot_text"])
             messages.append({"role": "assistant", "content": cleaned})
             
-        parsed_content = parse_message_with_images(user_msg)
-        messages.append({"role": "user", "content": parsed_content})
+        # Strip images from current message too
+        current_msg_text = re.sub(r"<up-img>.*?</up-img>", "", user_msg).strip()
+        messages.append({"role": "user", "content": current_msg_text})
 
         bot_buffer = ""
         resp_stream = client.chat.completions.create(
@@ -772,11 +782,14 @@ async def chat_stream_exec(req: ChatRequest):
         ]
 
         for exchange in history:
-            messages.append({"role": "user", "content": exchange["user_text"]})
+            user_content = exchange["user_text"]
+            user_content = re.sub(r"<up-img>.*?</up-img>", "", user_content).strip()
+            messages.append({"role": "user", "content": user_content})
             cleaned = strip_first_think_block(exchange["bot_text"])
             messages.append({"role": "assistant", "content": cleaned})
 
-        messages.append({"role": "user", "content": user_msg})
+        current_msg_text = re.sub(r"<up-img>.*?</up-img>", "", user_msg).strip()
+        messages.append({"role": "user", "content": current_msg_text})
 
         bot_buffer = ""
         resp_stream = client.chat.completions.create(
